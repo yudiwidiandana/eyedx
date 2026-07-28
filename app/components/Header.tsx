@@ -2,106 +2,109 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { translations, type Locale } from "../lib/translations";
 
-export default function Header() {
+export default function Header({ locale }: { locale: Locale }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const t = translations[locale].nav;
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-zinc-200">
+    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur-sm">
       <nav className="container mx-auto px-6 py-4 sm:px-8 lg:px-12">
-        <div className="flex items-center justify-between">
-          {/* Logo/Brand */}
-          <Link href="/" className="text-xl font-bold text-zinc-900">
+        <div className="flex items-center justify-between gap-3">
+          <Link href={`/${locale === "en" ? "" : locale}`} className="text-xl font-bold text-zinc-900">
             EyeDx
           </Link>
 
-          {/* Desktop Navigation */}
-          <ul className="hidden md:flex items-center gap-8">
-            <li>
-              <Link
-                href="/"
-                className="text-zinc-700 hover:text-zinc-900 transition-colors font-medium"
-              >
-                Beranda
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/diagnosis"
-                className="text-zinc-700 hover:text-zinc-900 transition-colors font-medium"
-              >
-                Diagnosis
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/about"
-                className="text-zinc-700 hover:text-zinc-900 transition-colors font-medium"
-              >
-                About
-              </Link>
-            </li>
-          </ul>
+          <div className="flex items-center gap-3">
+            <ul className="hidden items-center gap-8 md:flex">
+              <li>
+                <Link
+                  href={`/${locale === "en" ? "" : locale}`}
+                  className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                >
+                  {t.home}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale === "en" ? "diagnosis" : `${locale}/diagnosis`}`}
+                  className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                >
+                  {t.diagnosis}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale === "en" ? "about" : `${locale}/about`}`}
+                  className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                >
+                  {t.about}
+                </Link>
+              </li>
+            </ul>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-zinc-700"
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <LanguageSwitcher locale={locale} />
+
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="rounded-lg p-2 text-zinc-700 md:hidden"
+              aria-label="Toggle menu"
             >
-              {isMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {isMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
-          <ul className="md:hidden mt-4 pb-4 space-y-4 border-t border-zinc-200 pt-4">
+          <ul className="mt-4 space-y-4 border-t border-zinc-200 pt-4 md:hidden">
             <li>
               <Link
-                href="/"
+                href={`/${locale === "en" ? "" : locale}`}
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors font-medium"
+                className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
               >
-                Beranda
+                {t.home}
               </Link>
             </li>
             <li>
               <Link
-                href="/diagnosis"
+                href={`/${locale === "en" ? "diagnosis" : `${locale}/diagnosis`}`}
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors font-medium"
+                className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
               >
-                Diagnosis
+                {t.diagnosis}
               </Link>
             </li>
             <li>
               <Link
-                href="/about"
+                href={`/${locale === "en" ? "about" : `${locale}/about`}`}
                 onClick={() => setIsMenuOpen(false)}
-                className="block text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors font-medium"
+                className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
               >
-                About
+                {t.about}
               </Link>
             </li>
           </ul>
