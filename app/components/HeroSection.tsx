@@ -1,16 +1,31 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HeroSection() {
   return (
-    <section className="flex-1 flex items-center justify-center px-6 py-20 sm:px-8 lg:px-12">
-      <div className="max-w-4xl mx-auto text-center">
+    <section className="relative flex-1  flex items-center justify-center px-6 sm:px-8 lg:px-12 overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/hero/Background.jpg"
+          alt="Hero Background"
+          fill
+          className="object-cover object-[center_70%]"
+          priority
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 max-w-4xl mx-auto text-center">
         {/* Main Heading */}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white mb-6 leading-tight">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
           Diagnosis Penyakit Mata dengan Cepat & Akurat
         </h1>
 
         {/* Description */}
-        <p className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg sm:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
           Dapatkan diagnosis kondisi mata Anda dengan teknologi kecerdasan buatan terkini. 
           Cepat, akurat, dan mudah digunakan untuk deteksi dini berbagai penyakit mata.
         </p>
@@ -25,7 +40,7 @@ export default function HeroSection() {
           </Link>
           <Link
             href="/about"
-            className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-zinc-50 text-zinc-900 font-semibold rounded-lg border-2 border-zinc-300 hover:border-zinc-400 transition-colors dark:bg-zinc-800 dark:text-white dark:border-zinc-700 dark:hover:bg-zinc-700 dark:hover:border-zinc-600"
+            className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-zinc-50 text-zinc-900 font-semibold rounded-lg border-2 border-white hover:border-zinc-200 transition-colors shadow-lg"
           >
             Pelajari Lebih Lanjut
           </Link>
