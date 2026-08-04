@@ -23,7 +23,7 @@ export default function HeroSection({ locale }: { locale: Locale }) {
           {t.title}
         </h1>
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/90 drop-shadow-md sm:text-xl">
+        <p className="mx-auto mb-10 max-w-2xl rounded-lg bg-black/25 px-5 py-3 text-lg leading-relaxed text-white/95 shadow-md backdrop-blur-sm sm:text-xl">
           {t.description}
         </p>
 
