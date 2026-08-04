@@ -28,7 +28,7 @@ export const translations = {
     diagnosisPage: {
       title: "Eye Disease Diagnosis",
       description:
-        "The diagnosis page will be available soon. Here you can upload an eye photo to receive an automatic assessment.",
+        "INDICATOR OF SYMPTOM SEVERITY LEVEL:\n• MILD: Rarely appears, does not interfere with activities.\n• MODERATE: Appears several times a day, activities remain normal.\n• FAIRLY SEVERE: Often appears, somewhat difficult to resist, begins to interfere with activities.\n• VERY SEVERE: Continually appears, very painful and interferes with activities.",
     },
     language: {
       label: "Language",
@@ -61,7 +61,7 @@ export const translations = {
     diagnosisPage: {
       title: "Diagnosis Penyakit Mata",
       description:
-        "Halaman diagnosis akan segera hadir. Di sini Anda dapat mengunggah foto mata untuk mendapatkan penilaian otomatis.",
+        "INDIKATOR TINGKAT KEPARAHAN GEJALA:\n• RINGAN: Jarang muncul, tidak mengganggu aktivitas.\n• SEDANG: Muncul beberapa kali sehari, aktivitas masih normal.\n• CUKUP PARAH: Sering muncul, agak sulit ditahan, mulai mengganggu aktivitas.\n• SANGAT PARAH: Terus-menerus muncul, sangat nyeri & mengganggu aktivitas.",
     },
     language: {
       label: "Bahasa",
