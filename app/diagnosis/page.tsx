@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
 
@@ -14,16 +15,19 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
         </div>
 
         <div className="absolute bottom-16 left-4 right-4 flex items-center justify-between gap-4">
-          <button className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50">
+          <Link
+            href={`/${locale === "en" ? "" : locale}`}
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
+          >
             Kembali
-          </button>
+          </Link>
           <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
             Hasil Diagnosis
           </button>
         </div>
 
         <p className="absolute bottom-4 right-4 max-w-md text-right text-sm italic text-zinc-500">
-          Hasil analisis AI ini adalah skrining awal dan bukan pengganti diagnosis dokter mata spesialis.
+          Hasil analisis sistem berbasis aturan ini adalah skrining awal dan bukan pengganti diagnosis dokter spesialis mata.
         </p>
       </main>
     </div>

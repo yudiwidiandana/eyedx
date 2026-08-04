@@ -43,9 +43,9 @@ export const translations = {
       about: "Tentang",
     },
     hero: {
-      title: "Diagnosa Penyakit Mata dengan Cepat & Akurat",
+      title: "Diagnosis",
       description:
-        "Dapatkan hasil skrining kondisi mata Anda secara cepat dengan teknologi AI modern, mudah digunakan, dan dirancang untuk mendukung deteksi dini.",
+        "Dapatkan hasil skrining kondisi mata Anda secara cepat dengan sistem pakar berbasis aturan konvensional, mudah digunakan, dan dirancang untuk mendukung deteksi dini.",
       ctaPrimary: "Mulai Diagnosis",
       ctaSecondary: "Pelajari Lebih Lanjut",
     },
