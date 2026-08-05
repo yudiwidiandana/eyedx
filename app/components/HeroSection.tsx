@@ -30,13 +30,13 @@ export default function HeroSection({ locale }: { locale: Locale }) {
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             href={`/${locale === "en" ? "diagnosis" : `${locale}/diagnosis`}`}
-            className="w-full rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 sm:w-auto"
+            className="w-full rounded-lg border-2 border-white bg-white px-6 py-3 font-semibold text-zinc-900 shadow-lg transition-colors hover:border-zinc-200 hover:bg-zinc-50 sm:w-auto"
           >
             {t.ctaPrimary}
           </Link>
           <Link
             href={`/${locale === "en" ? "about" : `${locale}/about`}`}
-            className="w-full rounded-lg border-2 border-white bg-white px-8 py-4 font-semibold text-zinc-900 shadow-lg transition-colors hover:border-zinc-200 hover:bg-zinc-50 sm:w-auto"
+            className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 sm:w-auto"
           >
             {t.ctaSecondary}
           </Link>

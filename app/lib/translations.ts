@@ -61,7 +61,7 @@ export const translations = {
     diagnosisPage: {
       title: "Diagnosis Penyakit Mata",
       description:
-        "INDIKATOR TINGKAT KEPARAHAN GEJALA:\n• RINGAN: Jarang muncul, tidak mengganggu aktivitas.\n• SEDANG: Muncul beberapa kali sehari, aktivitas masih normal.\n• CUKUP PARAH: Sering muncul, agak sulit ditahan, mulai mengganggu aktivitas.\n• SANGAT PARAH: Terus-menerus muncul, sangat nyeri & mengganggu aktivitas.",
+        "INDIKATOR TINGKAT KEPARAHAN GEJALA:\n• RINGAN: Gejala mulai terasa, tidak mengganggu aktivitas\n• SEDANG: Gejala terasa cukup jelas dan sedikit mengganggu aktivitas \n• CUKUP PARAH: Gejala sering terasa, agak sulit ditahan, mulai mengganggu aktivitas\n• SANGAT PARAH: Gejala muncul terus-menerus dan sangat mengganggu aktivitas",
     },
     language: {
       label: "Bahasa",
