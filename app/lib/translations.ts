@@ -43,9 +43,9 @@ export const translations = {
       about: "Tentang",
     },
     hero: {
-      title: "Diagnosis",
+      title: "Diagnosis Penyakit Mata",
       description:
-        "Dapatkan hasil skrining kondisi mata Anda secara cepat dengan sistem pakar berbasis aturan konvensional, mudah digunakan, dan dirancang untuk mendukung deteksi dini.",
+        "Khawatir dengan kondisi mata Anda? Kenali gejala awalnya di sini. Proses cepat, mudah digunakan, dan bantu Anda mendapatkan diagnosis awal sebelum berkonsultasi dengan dokter.",
       ctaPrimary: "Mulai Diagnosis",
       ctaSecondary: "Pelajari Lebih Lanjut",
     },
