@@ -10,7 +10,7 @@ export default function Header({ locale }: { locale: Locale }) {
   const t = translations[locale].nav;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur-sm">
+    <header className="fixed inset-x-0 top-0 z-50 w-full border-b border-zinc-200 bg-white/50 backdrop-blur-sm">
       <nav className="container mx-auto px-6 py-4 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between gap-3">
           <Link href={`/${locale === "en" ? "" : locale}`} className="text-xl font-bold text-zinc-900">

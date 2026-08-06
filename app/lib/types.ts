@@ -55,8 +55,8 @@ export type SeverityLevel = 'none' | 'mild' | 'moderate' | 'fairly-severe' | 've
 // Mapping of severity levels to CF values
 export const severityCFMap: Record<SeverityLevel, number> = {
   'none': 0.0,
-  'mild': 0.4,
-  'moderate': 0.6,
+  'mild': 0.2,
+  'moderate': 0.5,
   'fairly-severe': 0.8,
   'very-severe': 1.0,
 };

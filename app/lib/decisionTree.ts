@@ -169,6 +169,13 @@ export function getNextQuestion(
 ): Symptom | null {
   // Get active diseases based on responses so far
   const activeDiseases = getActiveDiseases(responses);
+  // If G01 hasn't been answered yet, ask it first (fixed start)
+  const answeredNormalized = new Set(answeredSymptomCodes.map(normalizeSymptomCode));
+  const g01Code = normalizeSymptomCode("G01");
+  if (!answeredNormalized.has(g01Code)) {
+    const g01 = allSymptoms.find(s => normalizeSymptomCode(s.kodeGejala) === g01Code);
+    if (g01) return g01;
+  }
 
   if (activeDiseases.length === 0) {
     // All diseases eliminated - shouldn't normally happen, but stop questionnaire
@@ -234,5 +241,22 @@ export function buildQuestionQueue(
     activeDiseases
   );
 
-  return prioritizedSymptoms.map(s => s.kodeGejala);
+  // If G01 hasn't been answered, ensure it's first in the queue
+  const answeredNormalized = new Set(answeredSymptomCodes.map(normalizeSymptomCode));
+  const g01Code = normalizeSymptomCode("G01");
+  const queue = prioritizedSymptoms.map(s => s.kodeGejala);
+  if (!answeredNormalized.has(g01Code)) {
+    // Remove any existing G01 entry and unshift it to the front if present in allSymptoms
+    const idx = queue.findIndex(code => normalizeSymptomCode(code) === g01Code);
+    if (idx !== -1) {
+      queue.splice(idx, 1);
+      queue.unshift("G01");
+    } else {
+      // If G01 wasn't in the prioritized list but exists in allSymptoms, add it front
+      const g01Exists = allSymptoms.some(s => normalizeSymptomCode(s.kodeGejala) === g01Code);
+      if (g01Exists) queue.unshift("G01");
+    }
+  }
+
+  return queue;
 }
