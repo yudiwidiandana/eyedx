@@ -1,0 +1,24 @@
+import { notFound } from "next/navigation";
+import { QuestionnairePageContent } from "../../questionnaire/page";
+import { locales, type Locale } from "../../lib/translations";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+export default async function LocaleQuestionnairePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
+  if (!locales.includes(locale as Locale)) {
+    notFound();
+  }
+
+  return <QuestionnairePageContent locale={locale as Locale} />;
+}

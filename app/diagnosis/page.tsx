@@ -1,9 +1,49 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
 
 export function DiagnosisPageContent({ locale }: { locale: Locale }) {
   const t = translations[locale].diagnosisPage;
+  const router = useRouter();
+
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  const [errors, setErrors] = useState<{ name?: string; age?: string; gender?: string }>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: { name?: string; age?: string; gender?: string } = {};
+
+    if (!name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!age || parseInt(age) <= 0 || parseInt(age) > 150) {
+      newErrors.age = "Valid age is required";
+    }
+
+    if (!gender) {
+      newErrors.gender = "Gender is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateForm()) {
+      const params = new URLSearchParams({
+        name: name.trim(),
+        age: age,
+        gender: gender,
+      });
+      router.push(`/${locale === "en" ? "" : locale + "/"}questionnaire?${params.toString()}`);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
@@ -14,31 +54,46 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
 
           <div className="mb-8 grid gap-4 sm:grid-cols-3">
             <label className="flex flex-col gap-2 text-sm text-zinc-700">
-              <span className="font-semibold">Nama</span>
+              <span className="font-semibold">{t.nameLabel}</span>
               <input
                 type="text"
-                placeholder="Masukkan nama"
-                className="rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                placeholder={t.namePlaceholder}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={`rounded-lg border ${
+                  errors.name ? "border-red-500" : "border-zinc-300"
+                } bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
               />
+              {errors.name && <span className="text-xs text-red-500">{errors.name}</span>}
             </label>
             <label className="flex flex-col gap-2 text-sm text-zinc-700">
-              <span className="font-semibold">Umur</span>
+              <span className="font-semibold">{t.ageLabel}</span>
               <input
                 type="number"
-                placeholder="Masukkan umur"
-                className="rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                placeholder={t.agePlaceholder}
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                className={`rounded-lg border ${
+                  errors.age ? "border-red-500" : "border-zinc-300"
+                } bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
               />
+              {errors.age && <span className="text-xs text-red-500">{errors.age}</span>}
             </label>
             <label className="flex flex-col gap-2 text-sm text-zinc-700">
-              <span className="font-semibold">Jenis Kelamin</span>
+              <span className="font-semibold">{t.genderLabel}</span>
               <select
-                className="rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className={`rounded-lg border ${
+                  errors.gender ? "border-red-500" : "border-zinc-300"
+                } bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
               >
-                <option value="">Pilih jenis kelamin</option>
-                <option value="laki-laki">Laki-laki</option>
-                <option value="perempuan">Perempuan</option>
-                <option value="lainnya">Lainnya</option>
+                <option value="">{t.genderPlaceholder}</option>
+                <option value="laki-laki">{t.genderMale}</option>
+                <option value="perempuan">{t.genderFemale}</option>
+                <option value="lainnya">{t.genderOther}</option>
               </select>
+              {errors.gender && <span className="text-xs text-red-500">{errors.gender}</span>}
             </label>
           </div>
 
@@ -50,15 +105,18 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
             href={`/${locale === "en" ? "" : locale}`}
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
           >
-            Kembali
+            {t.backButton}
           </Link>
-          <button className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
-            Selanjutnya
+          <button 
+            onClick={handleNext}
+            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          >
+            {t.nextButton}
           </button>
         </div>
 
         <p className="absolute bottom-4 right-4 max-w-md text-right text-sm italic text-zinc-500">
-          Penting: Hasil analisis ini adalah deteksi dini, bukan diagnosis final medis. Harap konsultasikan kembali gejala Anda dengan dokter spesialis mata untuk penanganan lebih lanjut.
+          {t.disclaimer}
         </p>
       </main>
     </div>

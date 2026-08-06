@@ -1,0 +1,10 @@
+{
+  "illnesses": [
+    { "no": 1, "kodePenyakit": "P1", "namaPenyakit": "Blefaritis" },
+    { "no": 2, "kodePenyakit": "P2", "namaPenyakit": "Hordeolum" },
+    { "no": 3, "kodePenyakit": "P3", "namaPenyakit": "Chalazion" },
+    { "no": 4, "kodePenyakit": "P4", "namaPenyakit": "Asthenopia" },
+    { "no": 5, "kodePenyakit": "P5", "namaPenyakit": "Konjungtivitis" },
+    { "no": 6, "kodePenyakit": "P6", "namaPenyakit": "Dry Eye Syndrome" }
+  ]
+}
