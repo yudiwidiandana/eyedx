@@ -46,7 +46,7 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex pt-8 min-h-screen flex-col bg-zinc-50">
       <Header locale={locale} />
       <main className="flex-1 px-4 py-12 sm:px-6 lg:px-12">
         <div className="mx-auto max-w-4xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
