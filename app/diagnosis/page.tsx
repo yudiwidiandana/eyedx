@@ -48,9 +48,9 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
       <Header locale={locale} />
-      <main className="relative flex-1 px-6 py-16 sm:px-8 lg:px-12">
-        <div className="mx-auto max-w-4xl rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-          <h1 className="mb-6 text-4xl font-bold text-zinc-900">{t.title}</h1>
+      <main className="flex-1 px-4 py-12 sm:px-6 lg:px-12">
+        <div className="mx-auto max-w-4xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+          <h1 className="mb-6 text-3xl font-bold text-zinc-900 sm:text-4xl">{t.title}</h1>
 
           <div className="mb-8 grid gap-4 sm:grid-cols-3">
             <label className="flex flex-col gap-2 text-sm text-zinc-700">
@@ -100,22 +100,22 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
           <p className="whitespace-pre-line text-lg leading-relaxed text-zinc-700">{t.description}</p>
         </div>
 
-        <div className="absolute bottom-20 left-4 right-4 flex items-center justify-between gap-4">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
           <Link
             href={`/${locale === "en" ? "" : locale}`}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
+            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-center text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 sm:w-auto"
           >
             {t.backButton}
           </Link>
           <button 
             onClick={handleNext}
-            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 sm:w-auto"
           >
             {t.nextButton}
           </button>
         </div>
 
-        <p className="absolute bottom-4 right-4 max-w-md text-right text-sm italic text-zinc-500">
+        <p className="mt-4 text-sm italic text-zinc-500">
           {t.disclaimer}
         </p>
       </main>

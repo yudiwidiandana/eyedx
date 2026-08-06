@@ -160,11 +160,11 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
       <Header locale={locale} />
-      <main className="relative flex-1 px-6 py-16 sm:px-8 lg:px-12">
+      <main className="flex-1 px-4 py-12 sm:px-6 lg:px-12">
         <div className="mx-auto max-w-4xl">
           {/* Progress info */}
           <div className="mb-8">
-            <div className="mb-4 flex items-center justify-between text-sm">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-sm">
               <div className="space-y-1">
                 <p className="text-zinc-600">
                   {t.questionsAnswered.replace("{count}", answeredCount.toString())}
@@ -191,9 +191,9 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
           </div>
 
           {/* Question card */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
             <h1 className="mb-2 text-2xl font-bold text-zinc-900">{t.question}</h1>
-            <p className="mb-8 text-3xl font-semibold text-blue-600">
+            <p className="mb-8 text-2xl font-semibold text-blue-600 sm:text-3xl">
               {currentSymptom.namaGejala}
             </p>
 
@@ -232,17 +232,17 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
           </div>
 
           {/* Navigation buttons */}
-          <div className="mt-8 flex items-center justify-between gap-4">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
             <button
               onClick={handleBack}
               disabled={questionHistory.length === 0}
-              className="rounded-lg border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               {t.backButton}
             </button>
             <button
               onClick={handleNext}
-              className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 sm:w-auto"
             >
               {t.nextButton}
             </button>
