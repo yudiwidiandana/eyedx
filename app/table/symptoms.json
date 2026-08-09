@@ -1,8 +1,8 @@
 {
   "symptoms": [
-    { "no": 1, "kodeGejala": "G01", "namaGejala": "Mata kering", "symptomsName":"dry" },
-    { "no": 2, "kodeGejala": "G02", "namaGejala": "Mata gatal", "symptomsName":"itchy" },
-    { "no": 3, "kodeGejala": "G03", "namaGejala": "Mata perih", "symptomsName":"irritated" },
+    { "no": 1, "kodeGejala": "G01", "namaGejala": "Mata kering", "symptomsName":"dry eyes" },
+    { "no": 2, "kodeGejala": "G02", "namaGejala": "Mata gatal", "symptomsName":"itchy eyes" },
+    { "no": 3, "kodeGejala": "G03", "namaGejala": "Mata perih", "symptomsName":"irritated eyes" },
     { "no": 4, "kodeGejala": "G04", "namaGejala": "Kelopak mata terasa nyeri saat ditekan", "symptomsName":"painful eyelids" },
     { "no": 5, "kodeGejala": "G05", "namaGejala": "Sensasi benda asing", "symptomsName":"foreign body sensation" },
     { "no": 6, "kodeGejala": "G06", "namaGejala": "Mata berair", "symptomsName":"watery eyes" },

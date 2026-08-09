@@ -51,17 +51,126 @@ function ResultsContent({ locale }: { locale: Locale }) {
     );
   }
 
-  const topDiagnosis = diagnosisResults[0];
-  const hasSymptoms = topDiagnosis && topDiagnosis.percentage > 0;
+  const hasSymptoms = diagnosisResults.some(d => d.percentage > 0);
+
+  // Filter diseases with confidence > 10% for display
+  const hasAnyDiseases = diagnosisResults.filter(d => d.percentage > 10);
+  const primaryDiagnosis = hasAnyDiseases[0];
+  const otherDiagnoses = hasAnyDiseases.slice(1);
 
   // Determine confidence level
   const getConfidenceLevel = (percentage: number) => {
     if (percentage >= 70) return { label: t.confidenceHigh, color: "green" };
     if (percentage >= 40) return { label: t.confidenceMedium, color: "yellow" };
-    return { label: t.confidenceLow, color: "red" };
+    if (percentage >= 10) return { label: t.confidenceLow, color: "red" };
+    return { label: t.confidenceVeryLow, color: "gray" };
   };
 
-  const confidence = hasSymptoms ? getConfidenceLevel(topDiagnosis.percentage) : null;
+  const getBadgeClasses = (color: string) => {
+    switch (color) {
+      case "green": return "bg-green-100 text-green-800";
+      case "yellow": return "bg-yellow-100 text-yellow-800";
+      case "red": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getBarClasses = (color: string) => {
+    switch (color) {
+      case "green": return "bg-green-500";
+      case "yellow": return "bg-yellow-500";
+      case "red": return "bg-red-500";
+      default: return "bg-gray-400";
+    }
+  };
+
+  const formatSymptoms = (symptoms: string[], maxVisible: number = 4): string => {
+    if (symptoms.length === 0) return t.noSymptoms;
+
+    const visible = symptoms.slice(0, maxVisible);
+    const remaining = symptoms.length - maxVisible;
+
+    if (remaining > 0) {
+      return visible.join(", ") + " " + t.andMore.replace("{count}", remaining.toString());
+    }
+
+    return visible.join(", ");
+  };
+
+  const renderDiagnosisCard = (
+    diagnosis: DiagnosisResult,
+    isPrimary: boolean,
+    index: number
+  ) => {
+    const confidence = getConfidenceLevel(diagnosis.percentage);
+    const badgeClasses = getBadgeClasses(confidence.color);
+    const barClasses = getBarClasses(confidence.color);
+
+    return (
+      <div
+        key={diagnosis.diseaseCode}
+        className={`rounded-2xl border bg-white shadow-sm ${
+          isPrimary
+            ? "border-blue-300 bg-blue-50/50 shadow-md ring-1 ring-blue-100"
+            : "border-zinc-200"
+        }`}
+      >
+        <div className={`p-6 ${isPrimary ? "sm:p-8" : ""}`}>
+          {/* Header with rank and badge */}
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <span
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                  isPrimary ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-600"
+                }`}
+              >
+                {index + 1}
+              </span>
+              {isPrimary && (
+                <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                  {t.primaryDiagnosis}
+                </span>
+              )}
+            </div>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeClasses}`}>
+              {confidence.label}
+            </span>
+          </div>
+
+          {/* Disease name */}
+          <h3 className={`font-bold text-zinc-900 ${isPrimary ? "text-2xl" : "text-xl"}`}>
+            {diagnosis.diseaseName}
+          </h3>
+
+          {/* Confidence percentage and progress bar */}
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className={`font-bold ${isPrimary ? "text-4xl" : "text-3xl"} text-zinc-900`}>
+              {diagnosis.percentage}%
+            </span>
+            <span className="text-sm text-zinc-500">{t.confidence}</span>
+          </div>
+
+          {/* Confidence progress bar */}
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-zinc-200">
+            <div
+              className={`h-full ${barClasses} transition-all duration-500`}
+              style={{ width: `${Math.max(diagnosis.percentage, 2)}%` }}
+            />
+          </div>
+
+          {/* Contributing symptoms */}
+          <div className="mt-4">
+            <p className="mb-1 text-sm font-semibold text-zinc-700">
+              {t.contributingSymptoms}:
+            </p>
+            <p className="text-sm leading-relaxed text-zinc-600">
+              {formatSymptoms(diagnosis.contributingSymptoms)}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
@@ -102,52 +211,29 @@ function ResultsContent({ locale }: { locale: Locale }) {
             </div>
           </div>
 
-          {/* Diagnosis Result Card */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-semibold text-zinc-900">{t.diagnosisResult}</h2>
+          {/* Diagnosis Results Section */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-zinc-900">{t.allResultsTitle}</h2>
 
             {hasSymptoms ? (
-              <div className="space-y-6">
-                {/* Disease Name and Percentage */}
-                <div className="rounded-lg bg-blue-50 p-6">
-                  <p className="mb-2 text-sm font-medium text-blue-900">{t.confidence}</p>
-                  <div className="mb-3 flex items-baseline gap-3">
-                    <p className="text-4xl font-bold text-blue-600">{topDiagnosis.percentage}%</p>
-                    <p
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        confidence?.color === "green"
-                          ? "bg-green-100 text-green-800"
-                          : confidence?.color === "yellow"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {confidence?.label}
-                    </p>
-                  </div>
-                  <p className="text-2xl font-semibold text-zinc-900">{topDiagnosis.diseaseName}</p>
-                </div>
+              <>
+                {/* Primary Diagnosis */}
+                {primaryDiagnosis && renderDiagnosisCard(primaryDiagnosis, true, 0)}
 
-                {/* Contributing Symptoms */}
-                {topDiagnosis.contributingSymptoms.length > 0 && (
-                  <div>
-                    <h3 className="mb-3 text-lg font-semibold text-zinc-900">
-                      {t.contributingSymptoms}
+                {/* Other Possibilities */}
+                {otherDiagnoses.length > 0 && (
+                  <>
+                    <h3 className="pt-2 text-lg font-semibold text-zinc-700">
+                      {t.otherPossibilities}
                     </h3>
-                    <ul className="space-y-2">
-                      {topDiagnosis.contributingSymptoms.map((symptom, index) => (
-                        <li
-                          key={index}
-                          className="flex items-start gap-2 text-zinc-700"
-                        >
-                          <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-600" />
-                          <span>{symptom}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                    <div className="space-y-4">
+                      {otherDiagnoses.map((diagnosis, index) =>
+                        renderDiagnosisCard(diagnosis, false, index + 1)
+                      )}
+                    </div>
+                  </>
                 )}
-              </div>
+              </>
             ) : (
               <div className="rounded-lg bg-zinc-50 p-6 text-center">
                 <p className="text-lg text-zinc-700">{t.noSymptomsMessage}</p>

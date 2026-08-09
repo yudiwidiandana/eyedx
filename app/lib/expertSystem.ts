@@ -3,6 +3,10 @@ import illnessesData from '../table/illnesses.json';
 import expertSystemData from '../table/expertSystem.json';
 import type { Symptom, Illness, ExpertSystemSymptom, DiagnosisResult, SymptomResponse } from './types';
 
+// Negative evidence weight: How much null/0 CF symptoms reduce confidence
+// 0.3 = 30% reduction per symptom at full severity (userCF = 1.0)
+const NEGATIVE_EVIDENCE_WEIGHT = 0.3;
+
 // Normalize symptom codes (G01 -> G1, G02 -> G2, etc.)
 export function normalizeSymptomCode(code: string): string {
   const match = code.match(/G0*(\d+)/);
@@ -34,6 +38,7 @@ export function getIllnessName(code: string): string {
 }
 
 // Calculate diagnosis results based on user responses
+// Treats null expert CF as 0 AND applies negative evidence penalty
 export function calculateDiagnosis(responses: SymptomResponse[]): DiagnosisResult[] {
   const diseases = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
   const results: DiagnosisResult[] = [];
@@ -41,9 +46,11 @@ export function calculateDiagnosis(responses: SymptomResponse[]): DiagnosisResul
   // Get expert system data
   const expertSymptoms = expertSystemData.symptoms as ExpertSystemSymptom[];
 
-  // For each disease, calculate combined CF
+  // For each disease, calculate combined CF with negative evidence penalty
   diseases.forEach(diseaseCode => {
-    let combinedCF = 0;
+    let positiveCF = 0;
+    let hasProcessedPositive = false;
+    let negativePenalty = 1.0;  // Starts at 100%, reduced by negative evidence
     const contributingSymptoms: string[] = [];
 
     // Process each user response
@@ -61,90 +68,40 @@ export function calculateDiagnosis(responses: SymptomResponse[]): DiagnosisResul
 
       // Get expert CF for this disease
       const expertCF = expertSymptom.cf[diseaseCode as keyof typeof expertSymptom.cf];
-      
-      // Skip if expert system has no correlation (null CF)
-      if (expertCF === null) return;
 
-      // Calculate symptom CF
-      const symptomCF = calculateSymptomCF(expertCF, response.userCF);
-
-      // Combine with previous CF
-      if (combinedCF === 0) {
-        combinedCF = symptomCF;
+      // Check if this is negative evidence (null or 0)
+      if (expertCF === null || expertCF === 0) {
+        // NEGATIVE EVIDENCE: User reports symptom NOT associated with this disease
+        // Apply penalty: reduce confidence based on user severity and negative weight
+        negativePenalty *= (1 - response.userCF * NEGATIVE_EVIDENCE_WEIGHT);
       } else {
-        combinedCF = combineCF(combinedCF, symptomCF);
-      }
+        // POSITIVE EVIDENCE: Symptom matches this disease
+        const symptomCF = calculateSymptomCF(expertCF, response.userCF);
 
-      // Add to contributing symptoms
-      contributingSymptoms.push(response.symptomName);
+        // Combine with previous CF
+        if (!hasProcessedPositive) {
+          // First positive symptom: initialize
+          positiveCF = symptomCF;
+          hasProcessedPositive = true;
+        } else {
+          // Subsequent positive symptoms: combine using CF formula
+          positiveCF = combineCF(positiveCF, symptomCF);
+        }
+
+        // Add to contributing symptoms (only positive evidence)
+        contributingSymptoms.push(response.symptomName);
+      }
     });
+
+    // Apply negative evidence penalty to positive CF
+    const finalCF = positiveCF * negativePenalty;
 
     // Create result for this disease
     results.push({
       diseaseCode,
       diseaseName: getIllnessName(diseaseCode),
-      cfValue: combinedCF,
-      percentage: Math.round(combinedCF * 100),
-      contributingSymptoms,
-    });
-  });
-
-  // Sort by CF value (highest first)
-  return results.sort((a, b) => b.cfValue - a.cfValue);
-}
-
-// Calculate partial diagnosis for questionnaire progress (only answered symptoms)
-export function calculatePartialDiagnosis(
-  responses: SymptomResponse[],
-  activeDiseases: string[]
-): DiagnosisResult[] {
-  const results: DiagnosisResult[] = [];
-  const expertSymptoms = expertSystemData.symptoms as ExpertSystemSymptom[];
-
-  // Only calculate for active diseases
-  activeDiseases.forEach(diseaseCode => {
-    let combinedCF = 0;
-    const contributingSymptoms: string[] = [];
-
-    // Process each user response
-    responses.forEach(response => {
-      // Skip if user didn't report this symptom
-      if (response.userCF === 0) return;
-
-      // Find expert CF for this symptom-disease pair
-      const normalizedCode = normalizeSymptomCode(response.symptomCode);
-      const expertSymptom = expertSymptoms.find(
-        es => normalizeSymptomCode(es.kodeGejala) === normalizedCode
-      );
-
-      if (!expertSymptom) return;
-
-      // Get expert CF for this disease
-      const expertCF = expertSymptom.cf[diseaseCode as keyof typeof expertSymptom.cf];
-      
-      // Skip if expert system has no correlation (null CF)
-      if (expertCF === null) return;
-
-      // Calculate symptom CF
-      const symptomCF = calculateSymptomCF(expertCF, response.userCF);
-
-      // Combine with previous CF
-      if (combinedCF === 0) {
-        combinedCF = symptomCF;
-      } else {
-        combinedCF = combineCF(combinedCF, symptomCF);
-      }
-
-      // Add to contributing symptoms
-      contributingSymptoms.push(response.symptomName);
-    });
-
-    // Create result for this disease
-    results.push({
-      diseaseCode,
-      diseaseName: getIllnessName(diseaseCode),
-      cfValue: combinedCF,
-      percentage: Math.round(combinedCF * 100),
+      cfValue: finalCF,
+      percentage: Math.round(finalCF * 100),
       contributingSymptoms,
     });
   });
@@ -170,7 +127,7 @@ export function encodeResponses(responses: SymptomResponse[]): string {
 // Decode symptom responses from URL string
 export function decodeResponses(encoded: string): SymptomResponse[] {
   if (!encoded) return [];
-  
+
   return encoded.split(',').map(pair => {
     const [code, cf] = pair.split(':');
     return {
