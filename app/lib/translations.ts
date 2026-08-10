@@ -27,6 +27,10 @@ export const translations = {
       validationTitle: "Medical Validation",
       validationText:
         "All knowledge base rules and inference logic in EyeDx are developed and validated directly by eye specialist Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
+      privacyButtonLabel: "Privacy Policy",
+      privacyNoticeText:
+        "EyeDx is fully committed to protecting your privacy. Identity data and eye symptom information entered into this application are kept strictly confidential. This data is used only for algorithmic analysis and scientific research, without any misuse or sharing with third parties.",
+      closeButtonLabel: "Close",
     },
     diagnosisPage: {
       title: "Eye Disease Diagnosis",
@@ -120,6 +124,10 @@ export const translations = {
       validationTitle: "Validasi Medis",
       validationText:
         "Seluruh basis pengetahuan dan aturan inferensi dalam aplikasi EyeDx ini disusun dan divalidasi langsung oleh dokter pakar spesialis mata, Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
+      privacyButtonLabel: "Kebijakan Privasi",
+      privacyNoticeText:
+        "EyeDx berkomitmen penuh melindungi privasi Anda. Data identitas dan gejala keluhan mata yang Anda masukkan ke dalam aplikasi ini sepenuhnya bersifat rahasia. Data tersebut murni diproses untuk kebutuhan kalkulasi analisis algoritma serta kepentingan riset ilmiah, tanpa adanya penyalahgunaan atau penyebaran data ke pihak ketiga mana pun.",
+      closeButtonLabel: "Tutup",
     },
     diagnosisPage: {
       title: "Diagnosis Penyakit Mata",
