@@ -19,6 +19,8 @@ export function AboutPageContent({ locale }: { locale: Locale }) {
                 <li key={feature}>{feature}</li>
               ))}
             </ul>
+            <h3 className="mt-8 mb-2 text-xl font-semibold text-zinc-900">{t.validationTitle}</h3>
+            <p className="text-lg text-zinc-600">{t.validationText}</p>
           </div>
         </div>
       </main>

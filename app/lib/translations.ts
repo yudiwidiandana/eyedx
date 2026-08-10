@@ -24,6 +24,9 @@ export const translations = {
         "With the latest technology, we help you identify various eye conditions quickly and easily.",
       heading: "Key Features",
       features: ["Fast and accurate diagnosis", "Modern AI technology", "Easy to use", "Instant results"],
+      validationTitle: "Medical Validation",
+      validationText:
+        "All knowledge base rules and inference logic in EyeDx are developed and validated directly by eye specialist Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
     },
     diagnosisPage: {
       title: "Eye Disease Diagnosis",
@@ -108,7 +111,15 @@ export const translations = {
       intro2:
         "Dengan menggunakan metode Certainty Factor, kami membantu Anda mengidentifikasi potensi berbagai kondisi mata dengan cepat dan mudah sebelum berkonsultasi lebih lanjut ke fasilitas kesehatan.",
       heading: "Fitur Utama",
-      features: ["Diagnosis cepat dan akurat", "Teknologi AI modern", "Mudah digunakan", "Hasil instan"],
+      features: [
+        "Skrining awal cepat dan responsif",
+        "Menggunakan metode Certainty Factor ilmiah",
+        "Mudah digunakan tanpa wajib login",
+        "Hasil analisis instan",
+      ],
+      validationTitle: "Validasi Medis",
+      validationText:
+        "Seluruh basis pengetahuan dan aturan inferensi dalam aplikasi EyeDx ini disusun dan divalidasi langsung oleh dokter pakar spesialis mata, Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
     },
     diagnosisPage: {
       title: "Diagnosis Penyakit Mata",
