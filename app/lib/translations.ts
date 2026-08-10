@@ -104,9 +104,9 @@ export const translations = {
     aboutPage: {
       title: "Tentang EyeDx",
       intro1:
-        "EyeDx adalah platform diagnosis penyakit mata berbasis AI yang dirancang untuk memberikan deteksi dini yang cepat dan akurat.",
+        "EyeDx adalah platform skrining awal penyakit mata berbasis aturan konvensional yang dirancang untuk memberikan deteksi dini yang cepat dan akurat.",
       intro2:
-        "Dengan teknologi terkini, kami membantu Anda mengidentifikasi berbagai kondisi mata dengan cepat dan mudah.",
+        "Dengan menggunakan metode Certainty Factor, kami membantu Anda mengidentifikasi potensi berbagai kondisi mata dengan cepat dan mudah sebelum berkonsultasi lebih lanjut ke fasilitas kesehatan.",
       heading: "Fitur Utama",
       features: ["Diagnosis cepat dan akurat", "Teknologi AI modern", "Mudah digunakan", "Hasil instan"],
     },
