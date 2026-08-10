@@ -10,9 +10,9 @@ export const translations = {
       about: "About",
     },
     hero: {
-      title: "Diagnose Eye Diseases Quickly & Accurately",
+      title: "Eye Disease Screening",
       description:
-        "Get a fast and reliable diagnosis for your eye condition with modern AI technology. Easy to use and designed for early detection.",
+        "Concerned about your eye condition? Recognize the early symptoms here. The process is fast, easy to use, and helps you get an initial assessment before consulting with a doctor.",
       ctaPrimary: "Start Diagnosis",
       ctaSecondary: "Learn More",
     },
