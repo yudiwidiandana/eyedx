@@ -30,6 +30,9 @@ export const translations = {
       privacyButtonLabel: "Privacy Policy",
       privacyNoticeText:
         "EyeDx is fully committed to protecting your privacy. Identity data and eye symptom information entered into this application are kept strictly confidential. This data is used only for algorithmic analysis and scientific research, without any misuse or sharing with third parties.",
+      termsButtonLabel: "Terms & Conditions",
+      termsNoticeText:
+        "By using this application, you agree that EyeDx serves only as an early screening tool for eye health detection and is not a final clinical diagnosis. All analysis results are informative. Users are fully responsible for the accuracy of symptom data entered and any subsequent medical decisions made after using this service.",
       closeButtonLabel: "Close",
     },
     diagnosisPage: {
@@ -127,6 +130,9 @@ export const translations = {
       privacyButtonLabel: "Kebijakan Privasi",
       privacyNoticeText:
         "EyeDx berkomitmen penuh melindungi privasi Anda. Data identitas dan gejala keluhan mata yang Anda masukkan ke dalam aplikasi ini sepenuhnya bersifat rahasia. Data tersebut murni diproses untuk kebutuhan kalkulasi analisis algoritma serta kepentingan riset ilmiah, tanpa adanya penyalahgunaan atau penyebaran data ke pihak ketiga mana pun.",
+      termsButtonLabel: "Syarat & Ketentuan",
+      termsNoticeText:
+        "Dengan menggunakan aplikasi ini, Anda menyetujui bahwa EyeDx hanya berfungsi sebagai sarana skrining awal untuk deteksi dini kesehatan mata dan bukan merupakan diagnosis klinis final. Seluruh hasil analisis bersifat informatif. Pengguna bertanggung jawab penuh atas keakuratan data gejala yang dimasukkan serta segala keputusan medis lanjutan yang diambil setelah menggunakan layanan ini.",
       closeButtonLabel: "Tutup",
     },
     diagnosisPage: {
