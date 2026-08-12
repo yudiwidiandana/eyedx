@@ -10,9 +10,9 @@ export const translations = {
       about: "About",
     },
     hero: {
-      title: "Diagnose Eye Diseases Quickly & Accurately",
+      title: "Eye Disease Screening",
       description:
-        "Get a fast and reliable diagnosis for your eye condition with modern AI technology. Easy to use and designed for early detection.",
+        "Concerned about your eye condition? Recognize the early symptoms here. The process is fast, easy to use, and helps you get an initial assessment before consulting with a doctor.",
       ctaPrimary: "Start Diagnosis",
       ctaSecondary: "Learn More",
     },
@@ -24,6 +24,16 @@ export const translations = {
         "With the latest technology, we help you identify various eye conditions quickly and easily.",
       heading: "Key Features",
       features: ["Fast and accurate diagnosis", "Modern AI technology", "Easy to use", "Instant results"],
+      validationTitle: "Medical Validation",
+      validationText:
+        "All knowledge base rules and inference logic in EyeDx are developed and validated directly by eye specialist Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
+      privacyButtonLabel: "Privacy Policy",
+      privacyNoticeText:
+        "EyeDx is fully committed to protecting your privacy. Identity data and eye symptom information entered into this application are kept strictly confidential. This data is used only for algorithmic analysis and scientific research, without any misuse or sharing with third parties.",
+      termsButtonLabel: "Terms & Conditions",
+      termsNoticeText:
+        "By using this application, you agree that EyeDx serves only as an early screening tool for eye health detection and is not a final clinical diagnosis. All analysis results are informative. Users are fully responsible for the accuracy of symptom data entered and any subsequent medical decisions made after using this service.",
+      closeButtonLabel: "Close",
     },
     diagnosisPage: {
       title: "Eye Disease Diagnosis",
@@ -109,11 +119,26 @@ export const translations = {
     aboutPage: {
       title: "Tentang EyeDx",
       intro1:
-        "EyeDx adalah platform diagnosis penyakit mata berbasis AI yang dirancang untuk memberikan deteksi dini yang cepat dan akurat.",
+        "EyeDx adalah platform skrining awal penyakit mata berbasis aturan konvensional yang dirancang untuk memberikan deteksi dini yang cepat dan akurat.",
       intro2:
-        "Dengan teknologi terkini, kami membantu Anda mengidentifikasi berbagai kondisi mata dengan cepat dan mudah.",
+        "Dengan menggunakan metode Certainty Factor, kami membantu Anda mengidentifikasi potensi berbagai kondisi mata dengan cepat dan mudah sebelum berkonsultasi lebih lanjut ke fasilitas kesehatan.",
       heading: "Fitur Utama",
-      features: ["Diagnosis cepat dan akurat", "Teknologi AI modern", "Mudah digunakan", "Hasil instan"],
+      features: [
+        "Skrining awal cepat dan responsif",
+        "Menggunakan metode Certainty Factor ilmiah",
+        "Mudah digunakan tanpa wajib login",
+        "Hasil analisis instan",
+      ],
+      validationTitle: "Validasi Medis",
+      validationText:
+        "Seluruh basis pengetahuan dan aturan inferensi dalam aplikasi EyeDx ini disusun dan divalidasi langsung oleh dokter pakar spesialis mata, Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
+      privacyButtonLabel: "Kebijakan Privasi",
+      privacyNoticeText:
+        "EyeDx berkomitmen penuh melindungi privasi Anda. Data identitas dan gejala keluhan mata yang Anda masukkan ke dalam aplikasi ini sepenuhnya bersifat rahasia. Data tersebut murni diproses untuk kebutuhan kalkulasi analisis algoritma serta kepentingan riset ilmiah, tanpa adanya penyalahgunaan atau penyebaran data ke pihak ketiga mana pun.",
+      termsButtonLabel: "Syarat & Ketentuan",
+      termsNoticeText:
+        "Dengan menggunakan aplikasi ini, Anda menyetujui bahwa EyeDx hanya berfungsi sebagai sarana skrining awal untuk deteksi dini kesehatan mata dan bukan merupakan diagnosis klinis final. Seluruh hasil analisis bersifat informatif. Pengguna bertanggung jawab penuh atas keakuratan data gejala yang dimasukkan serta segala keputusan medis lanjutan yang diambil setelah menggunakan layanan ini.",
+      closeButtonLabel: "Tutup",
     },
     diagnosisPage: {
       title: "Diagnosis Penyakit Mata",
