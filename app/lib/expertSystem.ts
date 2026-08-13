@@ -4,7 +4,7 @@ import expertSystemData from '../table/expertSystem.json';
 import type { Symptom, Illness, ExpertSystemSymptom, DiagnosisResult, SymptomResponse } from './types';
 
 // Negative evidence weight: How much null/0 CF symptoms reduce confidence
-// 0.3 = 30% reduction per symptom at full severity (userCF = 1.0)
+// 0.3 = 50% reduction per symptom at full severity (userCF = 1.0)
 const NEGATIVE_EVIDENCE_WEIGHT = 0.3;
 
 // Normalize symptom codes (G01 -> G1, G02 -> G2, etc.)

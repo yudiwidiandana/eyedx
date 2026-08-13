@@ -91,6 +91,11 @@ export const translations = {
       symptomCount: "{count} symptoms",
       andMore: "+{count} more",
       noSymptoms: "No symptoms matched",
+      saveResultTitle: "Save this result",
+      saveResultHint: "Your diagnosis has been saved. Use this link to view it later or share it:",
+      openSavedResult: "View saved result",
+      copyLink: "Copy link",
+      copied: "Copied!",
     },
     language: {
       label: "Language",
@@ -191,6 +196,11 @@ export const translations = {
       symptomCount: "{count} gejala",
       andMore: "+{count} lagi",
       noSymptoms: "Tidak ada gejala yang cocok",
+      saveResultTitle: "Simpan Hasil Ini",
+      saveResultHint: "Hasil diagnosis Anda telah disimpan. Gunakan tautan ini untuk melihatnya kembali atau membagikannya:",
+      openSavedResult: "Lihat Hasil Tersimpan",
+      copyLink: "Salin Tautan",
+      copied: "Disalin!",
     },
     language: {
       label: "Bahasa",

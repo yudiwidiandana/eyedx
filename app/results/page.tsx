@@ -6,41 +6,39 @@ import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
 import { calculateDiagnosis, decodeResponses } from "../lib/expertSystem";
-import type { DiagnosisResult } from "../lib/types";
+import type { DiagnosisResult, SymptomResponse } from "../lib/types";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-function ResultsContent({ locale }: { locale: Locale }) {
+// Shared props: either from query params (fresh run) or from saved DB record (retrieval)
+export interface ResultsViewProps {
+  locale: Locale;
+  patientName: string;
+  patientAge: string;
+  patientGender: string;
+  responses: SymptomResponse[];
+  questionsAsked: number;
+  savedUuid?: string;
+}
+
+export function ResultsView({
+  locale,
+  patientName,
+  patientAge,
+  patientGender,
+  responses,
+  questionsAsked,
+  savedUuid,
+}: ResultsViewProps) {
   const t = translations[locale].resultsPage;
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Patient info from URL
-  const patientName = searchParams.get("name") || "";
-  const patientAge = searchParams.get("age") || "";
-  const patientGender = searchParams.get("gender") || "";
-  const encodedResponses = searchParams.get("responses") || "";
-  const questionsAsked = parseInt(searchParams.get("questionsAsked") || "0");
-
   const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Redirect if no patient info
-    if (!patientName || !patientAge || !patientGender) {
-      router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
-      return;
-    }
+    setDiagnosisResults(calculateDiagnosis(responses));
+  }, [responses]);
 
-    // Decode responses and calculate diagnosis
-    const responses = decodeResponses(encodedResponses);
-    const results = calculateDiagnosis(responses);
-    setDiagnosisResults(results);
-    setLoading(false);
-  }, [patientName, patientAge, patientGender, encodedResponses, locale, router]);
-
-  if (loading || !patientName) {
+  if (diagnosisResults.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-zinc-50">
         <Header locale={locale} />
@@ -192,6 +190,19 @@ function ResultsContent({ locale }: { locale: Locale }) {
             </div>
           )}
 
+          {/* Saved Result Link */}
+          {savedUuid && (
+            <SavedResultCard
+              locale={locale}
+              savedUuid={savedUuid}
+              title={t.saveResultTitle}
+              hint={t.saveResultHint}
+              openLabel={t.openSavedResult}
+              copyLabel={t.copyLink}
+              copiedLabel={t.copied}
+            />
+          )}
+
           {/* Patient Information Card */}
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-semibold text-zinc-900">{t.patientInfo}</h2>
@@ -267,6 +278,138 @@ function ResultsContent({ locale }: { locale: Locale }) {
   );
 }
 
+function SavedResultCard({
+  locale,
+  savedUuid,
+  title,
+  hint,
+  openLabel,
+  copyLabel,
+  copiedLabel,
+}: {
+  locale: Locale;
+  savedUuid: string;
+  title: string;
+  hint: string;
+  openLabel: string;
+  copyLabel: string;
+  copiedLabel: string;
+}) {
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const path = `/${locale === "en" ? "" : locale + "/"}results/${savedUuid}`;
+  const fullUrl = `${origin}${path}`;
+
+  return (
+    <div className="rounded-2xl border border-green-300 bg-green-50 p-6 shadow-sm">
+      <h2 className="mb-2 text-xl font-semibold text-green-900">{title}</h2>
+      <p className="mb-3 text-sm text-green-800">{hint}</p>
+      <code className="block w-full rounded-lg border border-green-200 bg-white px-4 py-2 text-sm break-all text-zinc-800">
+        {fullUrl}
+      </code>
+      <div className="mt-3 flex flex-wrap gap-3">
+        <Link
+          href={path}
+          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700"
+        >
+          {openLabel}
+        </Link>
+        <CopyButton text={fullUrl} label={copyLabel} copiedLabel={copiedLabel} />
+      </div>
+    </div>
+  );
+}
+
+function CopyButton({
+  text,
+  label,
+  copiedLabel,
+}: {
+  text: string;
+  label: string;
+  copiedLabel: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable; ignore
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="rounded-lg border border-green-300 bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"
+    >
+      {copied ? copiedLabel : label}
+    </button>
+  );
+}
+
+// Fresh run from query params: computes + auto-saves + shows link
+function FreshResultsContent({ locale }: { locale: Locale }) {
+  const t = translations[locale].resultsPage;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const patientName = searchParams.get("name") || "";
+  const patientAge = searchParams.get("age") || "";
+  const patientGender = searchParams.get("gender") || "";
+  const encodedResponses = searchParams.get("responses") || "";
+  const questionsAsked = parseInt(searchParams.get("questionsAsked") || "0");
+
+  const [savedUuid, setSavedUuid] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!patientName || !patientAge || !patientGender) {
+      router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
+      return;
+    }
+
+    const responses = decodeResponses(encodedResponses);
+
+    // Auto-save to DB (best-effort; never blocks showing results)
+    (async () => {
+      try {
+        const res = await fetch("/api/results", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: patientName,
+            age: parseInt(patientAge),
+            gender: patientGender,
+            responses: encodedResponses,
+            questionsAsked,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSavedUuid(data.id as string);
+        }
+      } catch (error) {
+        console.error("Failed to save result:", error);
+      }
+    })();
+  }, [patientName, patientAge, patientGender, encodedResponses, questionsAsked, locale, router]);
+
+  return (
+    <ResultsView
+      locale={locale}
+      patientName={patientName}
+      patientAge={patientAge}
+      patientGender={patientGender}
+      responses={decodeResponses(encodedResponses)}
+      questionsAsked={questionsAsked}
+      savedUuid={savedUuid}
+    />
+  );
+}
+
 export function ResultsPageContent({ locale }: { locale: Locale }) {
   return (
     <Suspense fallback={
@@ -277,7 +420,7 @@ export function ResultsPageContent({ locale }: { locale: Locale }) {
         </main>
       </div>
     }>
-      <ResultsContent locale={locale} />
+      <FreshResultsContent locale={locale} />
     </Suspense>
   );
 }
