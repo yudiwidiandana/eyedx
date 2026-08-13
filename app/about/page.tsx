@@ -19,7 +19,7 @@ export function AboutPageContent({ locale }: { locale: Locale }) {
             <p className="mb-4 text-lg text-zinc-600">{t.intro1}</p>
             <p className="mb-4 text-lg text-zinc-600">{t.intro2}</p>
             <h2 className="mt-8 mb-2 text-2xl font-bold text-zinc-900">{t.heading}</h2>
-            <ul className="space-y-2 text-lg text-zinc-600">
+            <ul className="space-y-1 text-lg text-zinc-600">
               {t.features.map((feature) => (
                 <li key={feature}>{feature}</li>
               ))}

@@ -19,11 +19,11 @@ export const translations = {
     aboutPage: {
       title: "About EyeDx",
       intro1:
-        "EyeDx is an AI-powered eye disease diagnosis platform designed to provide fast and accurate early detection.",
+        "EyeDx is an early eye disease screening platform based on conventional rules, designed to provide fast and accurate early detection.",
       intro2:
-        "With the latest technology, we help you identify various eye conditions quickly and easily.",
+        "By utilizing the Certainty Factor method, we help you identify potential eye conditions quickly and easily before consulting further with healthcare facilities.",
       heading: "Key Features",
-      features: ["Fast and accurate diagnosis", "Modern AI technology", "Easy to use", "Instant results"],
+      features: ["Fast and responsive early screening", "Utilizes the scientific Certainty Factor method", "Easy to use without mandatory login", "Instant analysis results"],
       validationTitle: "Medical Validation",
       validationText:
         "All knowledge base rules and inference logic in EyeDx are developed and validated directly by eye specialist Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
