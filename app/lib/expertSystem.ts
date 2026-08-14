@@ -5,7 +5,7 @@ import type { Symptom, Illness, ExpertSystemSymptom, DiagnosisResult, SymptomRes
 
 // Negative evidence weight: How much null/0 CF symptoms reduce confidence
 // 0.3 = 50% reduction per symptom at full severity (userCF = 1.0)
-const NEGATIVE_EVIDENCE_WEIGHT = 0.3;
+const NEGATIVE_EVIDENCE_WEIGHT = 0.5;
 
 // Normalize symptom codes (G01 -> G1, G02 -> G2, etc.)
 export function normalizeSymptomCode(code: string): string {
