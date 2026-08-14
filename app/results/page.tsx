@@ -107,7 +107,7 @@ export function ResultsView({
     return (
       <div
         key={diagnosis.diseaseCode}
-        className={`rounded-2xl border bg-white shadow-sm ${
+        className={`pt-8 rounded-2xl border bg-white shadow-sm ${
           isPrimary
             ? "border-blue-300 bg-blue-50/50 shadow-md ring-1 ring-blue-100"
             : "border-zinc-200"
@@ -171,7 +171,7 @@ export function ResultsView({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex pt-8 min-h-screen flex-col bg-zinc-50">
       <Header locale={locale} />
       <main className="flex-1 px-6 py-16 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-4xl space-y-6">

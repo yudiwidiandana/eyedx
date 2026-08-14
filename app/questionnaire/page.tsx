@@ -107,7 +107,7 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   const progress = ((answeredCount + 1) / totalQuestions) * 100;
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex pt-8 min-h-screen flex-col bg-zinc-50">
       <Header locale={locale} />
       <main className="relative flex-1 px-6 py-16 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-4xl">
