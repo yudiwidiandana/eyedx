@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { translations, type Locale } from "../lib/translations";
+import { useAuth } from "../lib/useAuth";
 
 export default function Header({ locale }: { locale: Locale }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
   const t = translations[locale].nav;
 
   return (
@@ -43,6 +45,45 @@ export default function Header({ locale }: { locale: Locale }) {
                   {t.about}
                 </Link>
               </li>
+              {user ? (
+                <>
+                  <li>
+                    <Link
+                      href={`/${locale === "en" ? "profile" : `${locale}/profile`}`}
+                      className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                    >
+                      Profile
+                    </Link>
+                  </li>
+                  {(user.role === 'admin' || user.role === 'expert') && (
+                    <li>
+                      <Link
+                        href={`/${locale === "en" ? "admin" : `${locale}/admin`}`}
+                        className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                      >
+                        Admin
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <button
+                      onClick={logout}
+                      className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li>
+                  <Link
+                    href={`/${locale === "en" ? "login" : `${locale}/login`}`}
+                    className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                  >
+                    Login
+                  </Link>
+                </li>
+              )}
             </ul>
 
             <LanguageSwitcher locale={locale} />
@@ -107,6 +148,51 @@ export default function Header({ locale }: { locale: Locale }) {
                 {t.about}
               </Link>
             </li>
+            {user ? (
+              <>
+                <li>
+                  <Link
+                    href={`/${locale === "en" ? "profile" : `${locale}/profile`}`}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                  >
+                    Profile
+                  </Link>
+                </li>
+                {(user.role === 'admin' || user.role === 'expert') && (
+                  <li>
+                    <Link
+                      href={`/${locale === "en" ? "admin" : `${locale}/admin`}`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                    >
+                      Admin
+                    </Link>
+                  </li>
+                )}
+                <li>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      logout();
+                    }}
+                    className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  href={`/${locale === "en" ? "login" : `${locale}/login`}`}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                >
+                  Login
+                </Link>
+              </li>
+            )}
           </ul>
         )}
       </nav>

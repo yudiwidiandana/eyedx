@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
-import { calculateDiagnosis, decodeResponses } from "../lib/expertSystem";
 import type { DiagnosisResult, SymptomResponse } from "../lib/types";
 
 // Force dynamic rendering
@@ -19,6 +18,7 @@ export interface ResultsViewProps {
   patientGender: string;
   responses: SymptomResponse[];
   questionsAsked: number;
+  diagnosisResults: DiagnosisResult[];
   savedUuid?: string;
 }
 
@@ -29,14 +29,10 @@ export function ResultsView({
   patientGender,
   responses,
   questionsAsked,
+  diagnosisResults,
   savedUuid,
 }: ResultsViewProps) {
   const t = translations[locale].resultsPage;
-  const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[]>([]);
-
-  useEffect(() => {
-    setDiagnosisResults(calculateDiagnosis(responses));
-  }, [responses]);
 
   if (diagnosisResults.length === 0) {
     return (
@@ -295,10 +291,13 @@ function SavedResultCard({
   copyLabel: string;
   copiedLabel: string;
 }) {
-  const [origin, setOrigin] = useState("");
-  useEffect(() => setOrigin(window.location.origin), []);
+  const [origin, setOrigin] = useState('');
   const path = `/${locale === "en" ? "" : locale + "/"}results/${savedUuid}`;
-  const fullUrl = `${origin}${path}`;
+  const fullUrl = origin ? `${origin}${path}` : path;
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   return (
     <div className="rounded-2xl border border-green-300 bg-green-50 p-6 shadow-sm">
@@ -353,7 +352,6 @@ function CopyButton({
 
 // Fresh run from query params: computes + auto-saves + shows link
 function FreshResultsContent({ locale }: { locale: Locale }) {
-  const t = translations[locale].resultsPage;
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -364,19 +362,35 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
   const questionsAsked = parseInt(searchParams.get("questionsAsked") || "0");
 
   const [savedUuid, setSavedUuid] = useState<string | undefined>(undefined);
+  const [responses, setResponses] = useState<SymptomResponse[]>([]);
+  const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!patientName || !patientAge || !patientGender) {
+    if (!patientName || !patientAge || !patientGender || !encodedResponses) {
       router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
       return;
     }
 
-    const responses = decodeResponses(encodedResponses);
-
-    // Auto-save to DB (best-effort; never blocks showing results)
     (async () => {
       try {
-        const res = await fetch("/api/results", {
+        const diagnoseRes = await fetch("/api/diagnose", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ responses: encodedResponses }),
+        });
+
+        if (!diagnoseRes.ok) {
+          router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
+          return;
+        }
+
+        const diagnoseData = await diagnoseRes.json();
+        setResponses(diagnoseData.responses);
+        setDiagnosisResults(diagnoseData.results);
+        setLoading(false);
+
+        const saveRes = await fetch("/api/results", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -387,15 +401,28 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
             questionsAsked,
           }),
         });
-        if (res.ok) {
-          const data = await res.json();
-          setSavedUuid(data.id as string);
+
+        if (saveRes.ok) {
+          const saveData = await saveRes.json();
+          setSavedUuid(saveData.id as string);
         }
       } catch (error) {
-        console.error("Failed to save result:", error);
+        console.error("Failed to load diagnosis:", error);
+        router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
       }
     })();
   }, [patientName, patientAge, patientGender, encodedResponses, questionsAsked, locale, router]);
+
+  if (loading || responses.length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col bg-zinc-50">
+        <Header locale={locale} />
+        <main className="flex flex-1 items-center justify-center">
+          <p className="text-lg text-zinc-600">Loading...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <ResultsView
@@ -403,8 +430,9 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
       patientName={patientName}
       patientAge={patientAge}
       patientGender={patientGender}
-      responses={decodeResponses(encodedResponses)}
+      responses={responses}
       questionsAsked={questionsAsked}
+      diagnosisResults={diagnosisResults}
       savedUuid={savedUuid}
     />
   );

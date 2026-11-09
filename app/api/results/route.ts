@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { saveDiagnosisResult } from "../../lib/db";
+import { verifyToken } from "../../lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let body: {
     name?: unknown;
     age?: unknown;
@@ -29,6 +30,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing or invalid patient data" }, { status: 400 });
   }
 
+  let userId: string | undefined;
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '') || 
+                request.cookies.get("next-auth.session-token")?.value;
+  if (token) {
+    const payload = await verifyToken(token);
+    if (payload) {
+      userId = payload.sub;
+    }
+  }
+
   try {
     const id = await saveDiagnosisResult({
       name,
@@ -36,10 +48,12 @@ export async function POST(request: Request) {
       gender,
       responses,
       questionsAsked,
-    });
+    }, userId);
     return NextResponse.json({ id, url: `/results/${id}` });
   } catch (error) {
     console.error("Failed to save diagnosis result:", error);
-    return NextResponse.json({ error: "Failed to save result" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error details:", errorMessage);
+    return NextResponse.json({ error: "Failed to save result", details: errorMessage }, { status: 500 });
   }
 }

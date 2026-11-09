@@ -4,10 +4,9 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
-import { getAllSymptoms, encodeResponses, getIllnessName } from "../lib/expertSystem";
+import { encodeResponses } from "../lib/symptomUtils";
 import { severityCFMap, type SeverityLevel, type SymptomResponse, type Symptom } from "../lib/types";
 
-// Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 function QuestionnaireContent({ locale }: { locale: Locale }) {
@@ -15,46 +14,48 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Patient info from URL
   const patientName = searchParams.get("name") || "";
   const patientAge = searchParams.get("age") || "";
   const patientGender = searchParams.get("gender") || "";
 
-  // Get all symptoms
-  const allSymptoms = getAllSymptoms();
+  const [allSymptoms, setAllSymptoms] = useState<Symptom[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [responses, setResponses] = useState<SymptomResponse[]>([]);
+
   const totalQuestions = allSymptoms.length;
 
-  // State
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<SymptomResponse[]>(
-    allSymptoms.map((symptom) => ({
-      symptomCode: symptom.kodeGejala,
-      symptomName: symptom.namaGejala,
-      userCF: 0,
-    }))
-  );
-  const [selectedSeverity, setSelectedSeverity] = useState<SeverityLevel>("none");
+  const currentResponse = responses[currentQuestionIndex];
+  const selectedSeverity = currentResponse 
+    ? (Object.entries(severityCFMap).find(
+        ([, cf]) => cf === currentResponse.userCF
+      )?.[0] as SeverityLevel) || "none"
+    : "none";
 
-  // Redirect if no patient info
+  useEffect(() => {
+    fetch('/api/symptoms')
+      .then(res => res.json())
+      .then(data => {
+        setAllSymptoms(data.symptoms || []);
+        setResponses((data.symptoms || []).map((symptom: Symptom) => ({
+          symptomCode: symptom.kodeGejala,
+          symptomName: symptom.namaGejala,
+          userCF: 0,
+        })));
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, []);
+
   useEffect(() => {
     if (!patientName || !patientAge || !patientGender) {
       router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
     }
   }, [patientName, patientAge, patientGender, locale, router]);
 
-  // Update selected severity when current question changes
-  useEffect(() => {
-    const currentResponse = responses[currentQuestionIndex];
-    if (currentResponse) {
-      const severity = Object.entries(severityCFMap).find(
-        ([_, cf]) => cf === currentResponse.userCF
-      )?.[0] as SeverityLevel;
-      setSelectedSeverity(severity || "none");
-    }
-  }, [currentQuestionIndex, responses]);
-
   const handleSeverityChange = (severity: SeverityLevel) => {
-    setSelectedSeverity(severity);
 
     // Update response
     const userCF = severityCFMap[severity];
@@ -91,7 +92,7 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
     router.push(`/${locale === "en" ? "" : locale + "/"}results?${params.toString()}`);
   };
 
-  if (!patientName) {
+  if (!patientName || loading || allSymptoms.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-zinc-50">
         <Header locale={locale} />
