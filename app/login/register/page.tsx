@@ -3,10 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Header from "../../components/Header";
+import { translations, type Locale } from "../../lib/translations";
 
 const MIN_PASSWORD_LENGTH = 8;
 
-export default function RegisterPage() {
+const fieldClass =
+  "block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 leading-6 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200";
+const inputClass = `mt-2 ${fieldClass}`;
+// appearance-none supaya select menuruti leading-6 dan tingginya sama dengan input
+const selectClass = `${fieldClass} appearance-none pr-10`;
+const labelClass = "block text-sm font-semibold text-zinc-700";
+
+export function RegisterPageContent({ locale }: { locale: Locale }) {
+  const t = translations[locale].authPage;
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
@@ -17,23 +27,25 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const loginHref = `/${locale === "en" ? "login" : `${locale}/login`}`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     const parsedAge = Number(age);
     if (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 150) {
-      setError("Age must be a whole number between 1 and 150");
+      setError(t.errorInvalidAge);
       return;
     }
 
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+      setError(t.errorPasswordTooShort.replace("{min}", String(MIN_PASSWORD_LENGTH)));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Password confirmation does not match");
+      setError(t.errorPasswordMismatch);
       return;
     }
 
@@ -57,7 +69,7 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Registration failed");
+        setError(data.error || t.errorRegisterFailed);
         setLoading(false);
         return;
       }
@@ -66,146 +78,163 @@ export default function RegisterPage() {
         localStorage.setItem('auth_token', data.token);
       }
 
-      router.push("/");
+      router.push(`/${locale === "en" ? "" : locale}`);
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t.errorNetwork);
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Create your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Username"
-              />
-            </div>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Full Name"
-              />
-            </div>
-            <div>
-              <label htmlFor="age" className="block text-sm font-medium text-gray-700">
-                Age
-              </label>
-              <input
-                id="age"
-                name="age"
-                type="number"
-                min="1"
-                max="150"
-                required
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Age"
-              />
-            </div>
-            <div>
-              <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
-                Gender
-              </label>
-              <select
-                id="gender"
-                name="gender"
-                required
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+    <div className="flex min-h-screen flex-col bg-zinc-50">
+      <Header locale={locale} />
+      <main className="flex flex-1 items-center justify-center px-6 py-24 sm:px-8">
+        <div className="w-full max-w-lg">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+            <h1 className="text-2xl font-bold text-zinc-900">{t.registerTitle}</h1>
+            <p className="mt-2 text-sm text-zinc-600">{t.registerSubtitle}</p>
+
+            {error && (
+              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
+            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="username" className={labelClass}>
+                  {t.usernameLabel}
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="name" className={labelClass}>
+                  {t.fullnameLabel}
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="age" className={labelClass}>
+                    {t.ageLabel}
+                  </label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="1"
+                    max="150"
+                    required
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="gender" className={labelClass}>
+                    {t.genderLabel}
+                  </label>
+                  <div className="relative mt-2">
+                    <select
+                      id="gender"
+                      name="gender"
+                      required
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="">{t.genderPlaceholder}</option>
+                      <option value="laki-laki">{t.genderMale}</option>
+                      <option value="perempuan">{t.genderFemale}</option>
+                      <option value="lainnya">{t.genderOther}</option>
+                    </select>
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-500"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className={labelClass}>
+                  {t.passwordLabel}
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={inputClass}
+                  placeholder={t.passwordHint.replace("{min}", String(MIN_PASSWORD_LENGTH))}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmPassword" className={labelClass}>
+                  {t.confirmPasswordLabel}
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={inputClass}
+                  placeholder={t.confirmPasswordHint}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="">Select gender</option>
-                <option value="laki-laki">Male</option>
-                <option value="perempuan">Female</option>
-                <option value="lainnya">Other</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Re-enter password"
-              />
-            </div>
+                {loading ? t.registerButtonLoading : t.registerButton}
+              </button>
+            </form>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? "Creating account..." : "Register"}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              href="/login"
-              className="text-sm text-blue-600 hover:text-blue-500"
-            >
-              Already have an account? Sign in
+          <p className="mt-6 text-center text-sm text-zinc-600">
+            <Link href={loginHref} className="font-semibold text-blue-600 transition hover:text-blue-700">
+              {t.toLogin}
             </Link>
-          </div>
-        </form>
-      </div>
+          </p>
+        </div>
+      </main>
     </div>
   );
+}
+
+export default function RegisterPage() {
+  return <RegisterPageContent locale="en" />;
 }

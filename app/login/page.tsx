@@ -3,13 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Header from "../components/Header";
+import { translations, type Locale } from "../lib/translations";
 
-export default function LoginPage() {
+export function LoginPageContent({ locale }: { locale: Locale }) {
+  const t = translations[locale].authPage;
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const registerHref = `/${locale === "en" ? "login/register" : `${locale}/login/register`}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +31,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Login failed");
+        setError(data.error || t.errorLoginFailed);
         setLoading(false);
         return;
       }
@@ -35,81 +40,81 @@ export default function LoginPage() {
         localStorage.setItem('auth_token', data.token);
       }
 
-      router.push("/");
+      router.push(`/${locale === "en" ? "" : locale}`);
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t.errorNetwork);
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Sign in to EyeDx
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="username" className="sr-only">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-            </div>
+    <div className="flex min-h-screen flex-col bg-zinc-50">
+      <Header locale={locale} />
+      <main className="flex flex-1 items-center justify-center px-6 py-24 sm:px-8">
+        <div className="w-full max-w-md">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+            <h1 className="text-2xl font-bold text-zinc-900">{t.loginTitle}</h1>
+            <p className="mt-2 text-sm text-zinc-600">{t.loginSubtitle}</p>
+
+            {error && (
+              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
+            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="username" className="block text-sm font-semibold text-zinc-700">
+                  {t.usernameLabel}
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold text-zinc-700">
+                  {t.passwordLabel}
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? t.loginButtonLoading : t.loginButton}
+              </button>
+            </form>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              href="/login/register"
-              className="text-sm text-blue-600 hover:text-blue-500"
-            >
-              Don&apos;t have an account? Register
+          <p className="mt-6 text-center text-sm text-zinc-600">
+            <Link href={registerHref} className="font-semibold text-blue-600 transition hover:text-blue-700">
+              {t.toRegister}
             </Link>
-          </div>
-        </form>
-      </div>
+          </p>
+        </div>
+      </main>
     </div>
   );
+}
+
+export default function LoginPage() {
+  return <LoginPageContent locale="en" />;
 }
