@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/app/lib/auth";
 import { getUserById } from "@/app/lib/db";
-import mariadb from "mariadb";
+import mariadb, { type ConnectionConfig } from "mariadb";
 
 const pool = mariadb.createPool({
   host: process.env.DB_HOST || "localhost",
@@ -9,7 +9,10 @@ const pool = mariadb.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "eyedx",
-  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false, servername: process.env.DB_HOST } : false,
+  // servername diteruskan ke tls.connect() tapi absen dari tipe ssl driver
+  ssl: process.env.DB_SSL === "true"
+    ? ({ rejectUnauthorized: false, servername: process.env.DB_HOST } as ConnectionConfig["ssl"])
+    : false,
   connectionLimit: 5,
 });
 

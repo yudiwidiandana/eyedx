@@ -1,4 +1,4 @@
-import mariadb, { type PoolConnection } from "mariadb";
+import mariadb, { type ConnectionConfig, type PoolConnection } from "mariadb";
 
 const pool = mariadb.createPool({
   host: process.env.DB_HOST || "localhost",
@@ -6,7 +6,10 @@ const pool = mariadb.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "eyedx",
-  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false, servername: process.env.DB_HOST } : false,
+  // servername diteruskan ke tls.connect() tapi absen dari tipe ssl driver
+  ssl: process.env.DB_SSL === "true"
+    ? ({ rejectUnauthorized: false, servername: process.env.DB_HOST } as ConnectionConfig["ssl"])
+    : false,
   connectionLimit: 1,
   connectTimeout: 60000,
   acquireTimeout: 60000,

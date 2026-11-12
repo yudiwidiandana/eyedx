@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 import 'dotenv/config';
-import mariadb from "mariadb";
+import mariadb, { type ConnectionConfig } from "mariadb";
 import bcrypt from "bcryptjs";
 import symptomsJson from "../app/table/symptoms.json";
 import illnessesJson from "../app/table/illnesses.json";
@@ -18,7 +18,10 @@ async function seed() {
       user: process.env.DB_USER || "root",
       password: process.env.DB_PASSWORD || "",
       database: process.env.DB_NAME || "eyedx",
-      ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false, servername: process.env.DB_HOST } : false,
+      // servername diteruskan ke tls.connect() tapi absen dari tipe ssl driver
+      ssl: process.env.DB_SSL === "true"
+        ? ({ rejectUnauthorized: false, servername: process.env.DB_HOST } as ConnectionConfig["ssl"])
+        : false,
       connectTimeout: 10000,
     });
     console.log("Connected to database");
