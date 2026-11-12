@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { translations, type Locale } from "../lib/translations";
+import { Button } from "@/components/ui/button";
 
 export default function HeroSection({ locale }: { locale: Locale }) {
   const t = translations[locale].hero;
@@ -28,18 +29,27 @@ export default function HeroSection({ locale }: { locale: Locale }) {
         </p>
 
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href={`/${locale === "en" ? "diagnosis" : `${locale}/diagnosis`}`}
-            className="w-full rounded-lg border-2 border-white bg-white px-6 py-3 font-semibold text-zinc-900 shadow-lg transition-colors hover:border-zinc-200 hover:bg-zinc-50 sm:w-auto"
+          <Button
+            size="lg"
+            nativeButton={false}
+            className="h-11 w-full px-8 text-base shadow-lg sm:w-auto"
+            render={
+              <Link href={`/${locale === "en" ? "diagnosis" : `${locale}/diagnosis`}`} />
+            }
           >
             {t.ctaPrimary}
-          </Link>
-          <Link
-            href={`/${locale === "en" ? "about" : `${locale}/about`}`}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 sm:w-auto"
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            nativeButton={false}
+            className="h-11 w-full px-8 text-base shadow-lg sm:w-auto"
+            render={
+              <Link href={`/${locale === "en" ? "about" : `${locale}/about`}`} />
+            }
           >
             {t.ctaSecondary}
-          </Link>
+          </Button>
         </div>
       </div>
     </section>

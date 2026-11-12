@@ -4,7 +4,7 @@ import { type Locale } from "./lib/translations";
 
 export function HomePage({ locale }: { locale: Locale }) {
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header locale={locale} />
       <main className="flex flex-1 flex-col">
         <HeroSection locale={locale} />

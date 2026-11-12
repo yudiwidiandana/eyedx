@@ -1,19 +1,22 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { Globe } from "lucide-react";
 import { locales, type Locale, translations } from "../lib/translations";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function LanguageSwitcher({ locale }: { locale: Locale }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
 
   const handleChange = (nextLocale: Locale) => {
-    if (nextLocale === locale) {
-      setOpen(false);
-      return;
-    }
+    if (nextLocale === locale) return;
 
     const segments = pathname.split("/").filter(Boolean);
     const [currentLocale, ...rest] = segments;
@@ -24,40 +27,34 @@ export default function LanguageSwitcher({ locale }: { locale: Locale }) {
         : `/${[nextLocale, ...segments].join("/")}`;
 
     router.push(nextPath);
-    setOpen(false);
   };
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-400 hover:text-zinc-900"
-        aria-label={translations[locale].language.switcherHint}
-      >
-        <span>{translations[locale].language.label}</span>
-        <span className="text-zinc-500">{locale === "en" ? "EN" : "ID"}</span>
-      </button>
-
-      {open && (
-        <div className="absolute right-0 mt-2 w-40 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
-          {locales.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => handleChange(option)}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition ${
-                locale === option
-                  ? "bg-zinc-900 text-white"
-                  : "text-zinc-700 hover:bg-zinc-100"
-              }`}
-            >
-              <span>{option === "en" ? "English" : "Bahasa Indonesia"}</span>
-              <span>{option === "en" ? "EN" : "ID"}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label={translations[locale].language.switcherHint}
+          >
+            <Globe />
+            {locale === "en" ? "EN" : "ID"}
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end">
+        {locales.map((option) => (
+          <DropdownMenuItem key={option} onClick={() => handleChange(option)}>
+            <span className="flex-1">
+              {option === "en" ? "English" : "Bahasa Indonesia"}
+            </span>
+            <span className="text-muted-foreground">
+              {option === "en" ? "EN" : "ID"}
+            </span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

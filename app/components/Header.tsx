@@ -1,199 +1,189 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { translations, type Locale } from "../lib/translations";
 import { useAuth } from "../lib/useAuth";
+import { Button } from "@/components/ui/button";
 
 export default function Header({ locale }: { locale: Locale }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const pathname = usePathname();
   const t = translations[locale].nav;
 
+  const path = (segment: string) =>
+    `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`;
+
+  const isActive = (href: string) => pathname === href;
+
+  const navLinkClass = (href: string, extra = "") =>
+    `${extra} font-medium transition-colors ${
+      isActive(href)
+        ? "font-semibold text-foreground underline decoration-2 underline-offset-4"
+        : "text-muted-foreground hover:text-foreground"
+    }`;
+
+  const navLinks = [
+    { href: path(""), label: t.home },
+    { href: path("diagnosis"), label: t.diagnosis },
+    { href: path("about"), label: t.about },
+  ];
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 w-full border-b border-zinc-200 bg-white/50 backdrop-blur-sm">
+    <header className="fixed inset-x-0 top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
       <nav className="container mx-auto px-6 py-4 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between gap-3">
-          <Link href={`/${locale === "en" ? "" : locale}`} className="text-xl font-bold text-zinc-900">
+          <Link href={path("")} className="text-xl font-bold text-foreground">
             EyeDx
           </Link>
 
-          <div className="flex items-center gap-3">
-            <ul className="hidden items-center gap-8 md:flex">
-              <li>
-                <Link
-                  href={`/${locale === "en" ? "" : locale}`}
-                  className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-                >
-                  {t.home}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/${locale === "en" ? "diagnosis" : `${locale}/diagnosis`}`}
-                  className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-                >
-                  {t.diagnosis}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/${locale === "en" ? "about" : `${locale}/about`}`}
-                  className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-                >
-                  {t.about}
-                </Link>
-              </li>
-              {user ? (
+          <div className="flex items-center gap-4">
+            <ul className="hidden items-center gap-7 md:flex">
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    aria-current={isActive(link.href) ? "page" : undefined}
+                    className={navLinkClass(link.href)}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              {user && (
                 <>
                   <li>
                     <Link
-                      href={`/${locale === "en" ? "profile" : `${locale}/profile`}`}
-                      className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                      href={path("profile")}
+                      aria-current={isActive(path("profile")) ? "page" : undefined}
+                      className={navLinkClass(path("profile"))}
                     >
                       Profile
                     </Link>
                   </li>
-                  {(user.role === 'admin' || user.role === 'expert') && (
+                  {(user.role === "admin" || user.role === "expert") && (
                     <li>
                       <Link
-                        href={`/${locale === "en" ? "admin" : `${locale}/admin`}`}
-                        className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                        href={path("admin")}
+                        aria-current={isActive(path("admin")) ? "page" : undefined}
+                        className={navLinkClass(path("admin"))}
                       >
                         Admin
                       </Link>
                     </li>
                   )}
-                  <li>
-                    <button
-                      onClick={logout}
-                      className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-                    >
-                      Logout
-                    </button>
-                  </li>
                 </>
-              ) : (
-                <li>
-                  <Link
-                    href={`/${locale === "en" ? "login" : `${locale}/login`}`}
-                    className="font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-                  >
-                    Login
-                  </Link>
-                </li>
               )}
             </ul>
 
-            <LanguageSwitcher locale={locale} />
+            <div className="hidden h-5 w-px bg-border md:block" />
 
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="rounded-lg p-2 text-zinc-700 md:hidden"
-              aria-label="Toggle menu"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-2">
+              {user ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:inline-flex"
+                  onClick={logout}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <Button
+                  render={<Link href={path("login")} />}
+                  nativeButton={false}
+                  size="sm"
+                  className="hidden md:inline-flex"
+                >
+                  Login
+                </Button>
+              )}
+
+              <LanguageSwitcher locale={locale} />
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setIsMenuOpen((value) => !value)}
+                aria-label="Toggle menu"
               >
-                {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
+                {isMenuOpen ? <X /> : <Menu />}
+              </Button>
+            </div>
           </div>
         </div>
 
         {isMenuOpen && (
-          <ul className="mt-4 space-y-4 border-t border-zinc-200 pt-4 md:hidden">
-            <li>
-              <Link
-                href={`/${locale === "en" ? "" : locale}`}
-                onClick={() => setIsMenuOpen(false)}
-                className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-              >
-                {t.home}
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/${locale === "en" ? "diagnosis" : `${locale}/diagnosis`}`}
-                onClick={() => setIsMenuOpen(false)}
-                className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-              >
-                {t.diagnosis}
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/${locale === "en" ? "about" : `${locale}/about`}`}
-                onClick={() => setIsMenuOpen(false)}
-                className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-              >
-                {t.about}
-              </Link>
-            </li>
-            {user ? (
-              <>
-                <li>
+          <div className="mt-4 border-t border-border pt-4 md:hidden">
+            <ul className="space-y-4">
+              {navLinks.map((link) => (
+                <li key={link.href}>
                   <Link
-                    href={`/${locale === "en" ? "profile" : `${locale}/profile`}`}
+                    href={link.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                    aria-current={isActive(link.href) ? "page" : undefined}
+                    className={navLinkClass(link.href, "block")}
                   >
-                    Profile
+                    {link.label}
                   </Link>
                 </li>
-                {(user.role === 'admin' || user.role === 'expert') && (
+              ))}
+              {user && (
+                <>
                   <li>
                     <Link
-                      href={`/${locale === "en" ? "admin" : `${locale}/admin`}`}
+                      href={path("profile")}
                       onClick={() => setIsMenuOpen(false)}
-                      className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                      aria-current={isActive(path("profile")) ? "page" : undefined}
+                      className={navLinkClass(path("profile"), "block")}
                     >
-                      Admin
+                      Profile
                     </Link>
                   </li>
-                )}
-                <li>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      logout();
-                    }}
-                    className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li>
-                <Link
-                  href={`/${locale === "en" ? "login" : `${locale}/login`}`}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block font-medium text-zinc-700 transition-colors hover:text-zinc-900"
+                  {(user.role === "admin" || user.role === "expert") && (
+                    <li>
+                      <Link
+                        href={path("admin")}
+                        onClick={() => setIsMenuOpen(false)}
+                        aria-current={isActive(path("admin")) ? "page" : undefined}
+                        className={navLinkClass(path("admin"), "block")}
+                      >
+                        Admin
+                      </Link>
+                    </li>
+                  )}
+                </>
+              )}
+            </ul>
+
+            <div className="mt-4 border-t border-border pt-4">
+              {user ? (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    logout();
+                  }}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <Button
+                  render={<Link href={path("login")} onClick={() => setIsMenuOpen(false)} />}
+                  nativeButton={false}
+                  className="w-full"
                 >
                   Login
-                </Link>
-              </li>
-            )}
-          </ul>
+                </Button>
+              )}
+            </div>
+          </div>
         )}
       </nav>
     </header>
