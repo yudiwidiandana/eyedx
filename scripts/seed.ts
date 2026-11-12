@@ -40,6 +40,14 @@ async function seed() {
     `);
     console.log("Users table created");
 
+    // migrasi untuk database lama yang tabel users-nya sudah ada sebelum kolom ini
+    await conn.query(`
+      ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS age    INT         NULL,
+        ADD COLUMN IF NOT EXISTS gender VARCHAR(20) NULL
+    `);
+    console.log("Users table migrated (age, gender)");
+
     await conn.query(`
       CREATE TABLE IF NOT EXISTS symptoms (
         no              INT          PRIMARY KEY,
