@@ -5,7 +5,7 @@ import { verifyToken } from "./app/lib/jwt";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const publicPaths = ["/", "/login", "/login/register", "/diagnosis", "/questionnaire", "/about"];
+  const publicPaths = ["/", "/login", "/login/register", "/diagnosis", "/questionnaire", "/about", "/results"];
   const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`/${path}`));
 
   if (isPublicPath) {
@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
                 request.cookies.get("next-auth.session-token")?.value;
 
   if (!token) {
-    if (pathname.startsWith("/profile") || pathname.startsWith("/results")) {
+    if (pathname.startsWith("/profile")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }
