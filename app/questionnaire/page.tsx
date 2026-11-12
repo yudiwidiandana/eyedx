@@ -144,17 +144,17 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
               <p className="mb-4 text-sm font-semibold text-zinc-700">{t.severityLabel}</p>
               <div className="space-y-3">
                 {[
-                  { value: "none" as SeverityLevel, label: t.severityNone, color: "zinc" },
-                  { value: "mild" as SeverityLevel, label: t.severityMild, color: "green" },
-                  { value: "moderate" as SeverityLevel, label: t.severityModerate, color: "yellow" },
-                  { value: "fairly-severe" as SeverityLevel, label: t.severityFairlySevere, color: "orange" },
-                  { value: "very-severe" as SeverityLevel, label: t.severityVerySevere, color: "red" },
-                ].map(({ value, label, color }) => (
+                  { value: "none" as SeverityLevel, label: t.severityNone, activeClass: "border-zinc-500 bg-zinc-50" },
+                  { value: "mild" as SeverityLevel, label: t.severityMild, activeClass: "border-green-500 bg-green-50" },
+                  { value: "moderate" as SeverityLevel, label: t.severityModerate, activeClass: "border-yellow-500 bg-yellow-50" },
+                  { value: "fairly-severe" as SeverityLevel, label: t.severityFairlySevere, activeClass: "border-orange-500 bg-orange-50" },
+                  { value: "very-severe" as SeverityLevel, label: t.severityVerySevere, activeClass: "border-red-500 bg-red-50" },
+                ].map(({ value, label, activeClass }) => (
                   <label
                     key={value}
                     className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition ${
                       selectedSeverity === value
-                        ? `border-${color}-500 bg-${color}-50`
+                        ? activeClass
                         : "border-zinc-200 bg-white hover:border-zinc-300"
                     }`}
                   >
