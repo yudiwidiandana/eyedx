@@ -45,10 +45,9 @@ export function ResultsView({
     );
   }
 
-  const hasSymptoms = diagnosisResults.some(d => d.percentage > 0);
-
   // Filter diseases with confidence > 10% for display
   const hasAnyDiseases = diagnosisResults.filter(d => d.percentage > 10);
+  const hasSymptoms = hasAnyDiseases.length > 0;
   const primaryDiagnosis = hasAnyDiseases[0];
   const otherDiagnoses = hasAnyDiseases.slice(1);
 
