@@ -33,7 +33,9 @@ async function seed() {
         name            VARCHAR(100) NOT NULL,
         password_hash   VARCHAR(255) NOT NULL,
         role            ENUM('user', 'expert', 'admin') NOT NULL DEFAULT 'user',
-        created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+        created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+        age             INT          NULL,
+        gender          VARCHAR(20)  NULL
       )
     `);
     console.log("Users table created");

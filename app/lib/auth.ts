@@ -15,19 +15,28 @@ export async function verifyPassword(
   return bcrypt.compare(password, hash);
 }
 
-export async function registerUser(
-  username: string,
-  name: string,
-  password: string
-): Promise<string> {
-  const existingUser = await getUserByUsername(username);
+export async function registerUser(data: {
+  username: string;
+  name: string;
+  age: number;
+  gender: string;
+  password: string;
+}): Promise<string> {
+  const existingUser = await getUserByUsername(data.username);
   if (existingUser) {
     throw new Error("Username already exists");
   }
 
-  const passwordHash = await hashPassword(password);
-  await createUser(username, name, passwordHash, "user");
-  const user = await getUserByUsername(username);
+  const passwordHash = await hashPassword(data.password);
+  await createUser({
+    username: data.username,
+    name: data.name,
+    age: data.age,
+    gender: data.gender,
+    passwordHash,
+    role: "user",
+  });
+  const user = await getUserByUsername(data.username);
 
   if (!user) {
     throw new Error("Failed to create user");

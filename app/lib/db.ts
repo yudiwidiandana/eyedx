@@ -34,6 +34,9 @@ export interface User {
   passwordHash: string;
   role: 'user' | 'expert' | 'admin';
   createdAt: Date;
+  // null untuk akun bawaan seed yang dibuat sebelum kolom ini ada
+  age: number | null;
+  gender: string | null;
 }
 
 export interface Symptom {
@@ -63,7 +66,9 @@ async function ensureTables(conn: PoolConnection) {
       name            VARCHAR(100) NOT NULL,
       password_hash   VARCHAR(255) NOT NULL,
       role            ENUM('user', 'expert', 'admin') NOT NULL DEFAULT 'user',
-      created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+      created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+      age             INT          NULL,
+      gender          VARCHAR(20)  NULL
     )
   `);
   await conn.query(`
@@ -161,12 +166,14 @@ export async function getDiagnosisResult(id: string): Promise<SavedDiagnosisResu
   }
 }
 
-export async function createUser(
-  username: string,
-  name: string,
-  passwordHash: string,
-  role: 'user' | 'expert' | 'admin' = 'user'
-): Promise<string> {
+export async function createUser(data: {
+  username: string;
+  name: string;
+  age: number;
+  gender: string;
+  passwordHash: string;
+  role?: 'user' | 'expert' | 'admin';
+}): Promise<string> {
   const id = crypto.randomUUID();
   let conn: PoolConnection | null = null;
 
@@ -174,9 +181,9 @@ export async function createUser(
     conn = await pool.getConnection();
     await ensureTables(conn);
     await conn.query(
-      `INSERT INTO users (id, username, name, password_hash, role)
-       VALUES (?, ?, ?, ?, ?)`,
-      [id, username, name, passwordHash, role]
+      `INSERT INTO users (id, username, name, age, gender, password_hash, role)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, data.username, data.name, data.age, data.gender, data.passwordHash, data.role || 'user']
     );
     return id;
   } finally {
@@ -191,7 +198,7 @@ export async function getUserByUsername(username: string): Promise<User | null> 
     conn = await pool.getConnection();
     await ensureTables(conn);
     const rows = await conn.query(
-      `SELECT id, username, name, password_hash, role, created_at
+      `SELECT id, username, name, age, gender, password_hash, role, created_at
        FROM users WHERE username = ?`,
       [username]
     );
@@ -205,6 +212,8 @@ export async function getUserByUsername(username: string): Promise<User | null> 
       passwordHash: row.password_hash,
       role: row.role,
       createdAt: new Date(row.created_at),
+      age: row.age,
+      gender: row.gender,
     };
   } finally {
     if (conn) conn.release();
@@ -218,7 +227,7 @@ export async function getUserById(id: string): Promise<User | null> {
     conn = await pool.getConnection();
     await ensureTables(conn);
     const rows = await conn.query(
-      `SELECT id, username, name, password_hash, role, created_at
+      `SELECT id, username, name, age, gender, password_hash, role, created_at
        FROM users WHERE id = ?`,
       [id]
     );
@@ -232,6 +241,8 @@ export async function getUserById(id: string): Promise<User | null> {
       passwordHash: row.password_hash,
       role: row.role,
       createdAt: new Date(row.created_at),
+      age: row.age,
+      gender: row.gender,
     };
   } finally {
     if (conn) conn.release();
