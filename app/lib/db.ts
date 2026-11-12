@@ -220,6 +220,59 @@ export async function getUserByUsername(username: string): Promise<User | null> 
   }
 }
 
+export type UserSummary = Omit<User, 'passwordHash'>;
+
+// password_hash sengaja tidak diambil supaya tidak pernah terkirim ke klien
+export async function getUsers(): Promise<UserSummary[]> {
+  let conn: PoolConnection | null = null;
+
+  try {
+    conn = await pool.getConnection();
+    await ensureTables(conn);
+    const rows = await conn.query(
+      `SELECT id, username, name, age, gender, role, created_at
+       FROM users ORDER BY created_at DESC`
+    );
+    return Array.isArray(rows) ? rows.map(row => ({
+      id: row.id,
+      username: row.username,
+      name: row.name,
+      role: row.role,
+      createdAt: new Date(row.created_at),
+      age: row.age,
+      gender: row.gender,
+    })) : [];
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+export async function updateUser(id: string, data: {
+  name?: string;
+  age?: number;
+  gender?: string;
+  passwordHash?: string;
+  role?: 'user' | 'expert' | 'admin';
+}): Promise<void> {
+  let conn: PoolConnection | null = null;
+  try {
+    conn = await pool.getConnection();
+    await ensureTables(conn);
+    await conn.query(
+      `UPDATE users
+       SET name = COALESCE(?, name),
+           age = COALESCE(?, age),
+           gender = COALESCE(?, gender),
+           password_hash = COALESCE(?, password_hash),
+           role = COALESCE(?, role)
+       WHERE id = ?`,
+      [data.name, data.age, data.gender, data.passwordHash, data.role, id]
+    );
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
 export async function getUserById(id: string): Promise<User | null> {
   let conn: PoolConnection | null = null;
 

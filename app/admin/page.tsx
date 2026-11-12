@@ -7,6 +7,19 @@ import Header from "../components/Header";
 import SymptomModal from "./components/SymptomModal";
 import IllnessModal from "./components/IllnessModal";
 import ExpertSystemModal from "./components/ExpertSystemModal";
+import UserModal, { type AdminUser } from "./components/UserModal";
+
+const roleBadgeClass: Record<AdminUser["role"], string> = {
+  admin: "bg-blue-100 text-blue-800",
+  expert: "bg-amber-100 text-amber-800",
+  user: "bg-zinc-100 text-zinc-700",
+};
+
+const roleLabel: Record<AdminUser["role"], string> = {
+  admin: "Admin",
+  expert: "Expert",
+  user: "User",
+};
 
 interface Symptom {
   no: number;
@@ -34,7 +47,7 @@ interface ExpertSystemEntry {
   };
 }
 
-type TabType = "symptoms" | "illnesses" | "expert-system";
+type TabType = "symptoms" | "illnesses" | "expert-system" | "users";
 
 export default function AdminPage() {
   const { user, loading } = useAuth();
@@ -43,6 +56,7 @@ export default function AdminPage() {
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
   const [illnesses, setIllnesses] = useState<Illness[]>([]);
   const [expertSystem, setExpertSystem] = useState<ExpertSystemEntry[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -53,6 +67,8 @@ export default function AdminPage() {
   const [editingSymptom, setEditingSymptom] = useState<Symptom | undefined>(undefined);
   const [editingIllness, setEditingIllness] = useState<Illness | undefined>(undefined);
   const [editingExpertSystem, setEditingExpertSystem] = useState<ExpertSystemEntry | undefined>(undefined);
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<AdminUser | undefined>(undefined);
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== "admin" && user.role !== "expert"))) {
@@ -90,6 +106,10 @@ export default function AdminPage() {
         const res = await fetch("/api/admin/expert-system", { headers });
         const data = await res.json();
         setExpertSystem(data.expertSystem || []);
+      } else if (activeTab === "users") {
+        const res = await fetch("/api/admin/users", { headers });
+        const data = await res.json();
+        setUsers(data.users || []);
       }
     } catch (error) {
       console.error("Failed to load data:", error);
@@ -107,6 +127,9 @@ export default function AdminPage() {
     } else if (activeTab === "expert-system") {
       setEditingExpertSystem(undefined);
       setExpertSystemModalOpen(true);
+    } else if (activeTab === "users") {
+      setEditingUser(undefined);
+      setUserModalOpen(true);
     }
   };
 
@@ -120,6 +143,9 @@ export default function AdminPage() {
     } else if (activeTab === "expert-system") {
       setEditingExpertSystem(item);
       setExpertSystemModalOpen(true);
+    } else if (activeTab === "users") {
+      setEditingUser(item);
+      setUserModalOpen(true);
     }
   };
 
@@ -195,6 +221,13 @@ export default function AdminPage() {
     e.kodeGejala.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const filteredUsers = users.filter(
+    (u) =>
+      u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.role.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
       <Header locale="en" />
@@ -235,6 +268,18 @@ export default function AdminPage() {
               >
                 Expert System ({expertSystem.length})
               </button>
+              {user.role === "admin" && (
+                <button
+                  onClick={() => setActiveTab("users")}
+                  className={`${
+                    activeTab === "users"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-zinc-600 hover:text-zinc-900 hover:border-zinc-300"
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                >
+                  Users ({users.length})
+                </button>
+              )}
             </nav>
           </div>
 
@@ -449,6 +494,71 @@ export default function AdminPage() {
                   </table>
                 </div>
               )}
+
+              {activeTab === "users" && (
+                <table className="min-w-full divide-y divide-zinc-200">
+                  <thead className="bg-zinc-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                        Username
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                        Full Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                        Age
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                        Gender
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-zinc-200">
+                    {filteredUsers.map((u) => (
+                      <tr key={u.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-zinc-900">
+                          {u.username}
+                          {u.id === user.id && (
+                            <span className="ml-2 text-xs font-normal text-zinc-500">(you)</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-zinc-900">{u.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-600">
+                          {u.age ?? "—"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-600">
+                          {u.gender ?? "—"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${roleBadgeClass[u.role]}`}
+                          >
+                            {roleLabel[u.role]}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {u.id === user.id ? (
+                            <span className="text-zinc-400">—</span>
+                          ) : (
+                            <button
+                              onClick={() => handleEdit(u)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
 
@@ -466,6 +576,11 @@ export default function AdminPage() {
           {!dataLoading && activeTab === "expert-system" && filteredExpertSystem.length === 0 && (
             <div className="text-center py-12 bg-white rounded-lg">
               <p className="text-zinc-600">No expert system entries found</p>
+            </div>
+          )}
+          {!dataLoading && activeTab === "users" && filteredUsers.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-lg">
+              <p className="text-zinc-600">No users found</p>
             </div>
           )}
         </div>
@@ -493,6 +608,14 @@ export default function AdminPage() {
         entry={editingExpertSystem}
         symptoms={symptoms}
         illnesses={illnesses}
+      />
+
+      <UserModal
+        isOpen={userModalOpen}
+        onClose={() => setUserModalOpen(false)}
+        onSave={handleModalSave}
+        user={editingUser}
+        currentUserId={user.id}
       />
     </div>
   );
