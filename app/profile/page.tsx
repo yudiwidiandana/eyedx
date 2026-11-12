@@ -4,6 +4,7 @@ import { useAuth } from "../lib/useAuth";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Header from "../components/Header";
 
 interface HistoryItem {
   id: string;
@@ -43,14 +44,18 @@ export default function ProfilePage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
+      <div className="flex min-h-screen flex-col bg-gray-50">
+        <Header locale="en" />
+        <div className="flex flex-1 items-center justify-center">
+          <p>Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 px-4">
+      <Header locale="en" />
       <div className="max-w-6xl mx-auto py-8">
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Profile</h1>
