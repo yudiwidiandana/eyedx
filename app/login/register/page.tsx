@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../../components/Header";
 import { translations, type Locale } from "../../lib/translations";
+
+// hanya izinkan path internal supaya ?next= tidak bisa dipakai mengarahkan ke situs lain
+function safeNext(value: string | null): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -15,9 +21,11 @@ const inputClass = `mt-2 ${fieldClass}`;
 const selectClass = `${fieldClass} appearance-none pr-10`;
 const labelClass = "block text-sm font-semibold text-zinc-700";
 
-export function RegisterPageContent({ locale }: { locale: Locale }) {
+function RegisterForm({ locale }: { locale: Locale }) {
   const t = translations[locale].authPage;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeNext(searchParams.get("next"));
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
@@ -27,7 +35,8 @@ export function RegisterPageContent({ locale }: { locale: Locale }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const loginHref = `/${locale === "en" ? "login" : `${locale}/login`}`;
+  const loginBase = `/${locale === "en" ? "login" : `${locale}/login`}`;
+  const loginHref = nextPath ? `${loginBase}?next=${encodeURIComponent(nextPath)}` : loginBase;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +87,7 @@ export function RegisterPageContent({ locale }: { locale: Locale }) {
         localStorage.setItem('auth_token', data.token);
       }
 
-      router.push(`/${locale === "en" ? "" : locale}`);
+      router.push(nextPath || `/${locale === "en" ? "" : locale}`);
       router.refresh();
     } catch {
       setError(t.errorNetwork);
@@ -232,6 +241,23 @@ export function RegisterPageContent({ locale }: { locale: Locale }) {
         </div>
       </main>
     </div>
+  );
+}
+
+export function RegisterPageContent({ locale }: { locale: Locale }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col bg-zinc-50">
+          <Header locale={locale} />
+          <main className="flex flex-1 items-center justify-center">
+            <p className="text-lg text-zinc-600">Loading...</p>
+          </main>
+        </div>
+      }
+    >
+      <RegisterForm locale={locale} />
+    </Suspense>
   );
 }
 

@@ -1,20 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
 
-export function LoginPageContent({ locale }: { locale: Locale }) {
+// hanya izinkan path internal supaya ?next= tidak bisa dipakai mengarahkan ke situs lain
+function safeNext(value: string | null): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
+
+function LoginForm({ locale }: { locale: Locale }) {
   const t = translations[locale].authPage;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeNext(searchParams.get("next"));
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const registerHref = `/${locale === "en" ? "login/register" : `${locale}/login/register`}`;
+  const registerBase = `/${locale === "en" ? "login/register" : `${locale}/login/register`}`;
+  const registerHref = nextPath
+    ? `${registerBase}?next=${encodeURIComponent(nextPath)}`
+    : registerBase;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +51,7 @@ export function LoginPageContent({ locale }: { locale: Locale }) {
         localStorage.setItem('auth_token', data.token);
       }
 
-      router.push(`/${locale === "en" ? "" : locale}`);
+      router.push(nextPath || `/${locale === "en" ? "" : locale}`);
       router.refresh();
     } catch {
       setError(t.errorNetwork);
@@ -112,6 +123,23 @@ export function LoginPageContent({ locale }: { locale: Locale }) {
         </div>
       </main>
     </div>
+  );
+}
+
+export function LoginPageContent({ locale }: { locale: Locale }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col bg-zinc-50">
+          <Header locale={locale} />
+          <main className="flex flex-1 items-center justify-center">
+            <p className="text-lg text-zinc-600">Loading...</p>
+          </main>
+        </div>
+      }
+    >
+      <LoginForm locale={locale} />
+    </Suspense>
   );
 }
 
