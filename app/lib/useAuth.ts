@@ -25,7 +25,21 @@ export function useAuth() {
     }
 
     fetch("/api/auth/me", { headers })
-      .then((res) => (res.ok ? res.json() : null))
+      .then(async (res) => {
+        if (res.ok) return res.json();
+        // 404 = token sah tapi usernya sudah dihapus; buang sesi basi lalu muat ulang
+        if (res.status === 404) {
+          const loggedOut = await fetch("/api/auth", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: "logout" }),
+          });
+          localStorage.removeItem('auth_token');
+          // hanya muat ulang bila cookie benar-benar terhapus, supaya tidak berulang tanpa henti
+          if (loggedOut.ok) window.location.reload();
+        }
+        return null;
+      })
       .then((data) => {
         setUser(data);
         setLoading(false);
