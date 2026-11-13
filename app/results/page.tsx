@@ -38,6 +38,14 @@ export function ResultsView({
 }: ResultsViewProps) {
   const t = translations[locale].resultsPage;
 
+  // T23: slug gender disimpan selalu dalam Bahasa Indonesia, terjemahkan untuk tampilan
+  const genderLabels: Record<string, string> = {
+    "laki-laki": translations[locale].diagnosisPage.genderMale,
+    perempuan: translations[locale].diagnosisPage.genderFemale,
+    lainnya: translations[locale].diagnosisPage.genderOther,
+  };
+  const displayGender = genderLabels[patientGender] ?? patientGender;
+
   if (diagnosisResults.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
@@ -219,7 +227,7 @@ export function ResultsView({
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t.patientGender}</p>
-                  <p className="text-lg font-medium text-foreground">{patientGender}</p>
+                  <p className="text-lg font-medium text-foreground">{displayGender}</p>
                 </div>
               </div>
             </CardContent>
