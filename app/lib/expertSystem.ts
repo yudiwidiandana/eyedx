@@ -2,8 +2,6 @@ import { getSymptoms, getIllnesses, getExpertSystem } from './db';
 import type { DiagnosisResult, SymptomResponse } from './types';
 import { normalizeSymptomCode } from './symptomUtils';
 
-const NEGATIVE_EVIDENCE_WEIGHT = 0.5;
-
 function combineCF(cfOld: number, cfNew: number): number {
   return cfOld + cfNew * (1 - cfOld);
 }
@@ -36,7 +34,6 @@ export async function calculateDiagnosis(responses: SymptomResponse[]): Promise<
   for (const diseaseCode of diseases) {
     let positiveCF = 0;
     let hasProcessedPositive = false;
-    let negativePenalty = 1.0;
     const contributingSymptoms: string[] = [];
 
     responses.forEach(response => {
@@ -51,23 +48,21 @@ export async function calculateDiagnosis(responses: SymptomResponse[]): Promise<
 
       const expertCF = expertSymptom.cf[diseaseCode as keyof typeof expertSymptom.cf];
 
-      if (expertCF === null || expertCF === 0) {
-        negativePenalty *= (1 - response.userCF * NEGATIVE_EVIDENCE_WEIGHT);
+      if (expertCF === null || expertCF === 0) return;
+
+      const symptomCF = calculateSymptomCF(expertCF, response.userCF);
+
+      if (!hasProcessedPositive) {
+        positiveCF = symptomCF;
+        hasProcessedPositive = true;
       } else {
-        const symptomCF = calculateSymptomCF(expertCF, response.userCF);
-
-        if (!hasProcessedPositive) {
-          positiveCF = symptomCF;
-          hasProcessedPositive = true;
-        } else {
-          positiveCF = combineCF(positiveCF, symptomCF);
-        }
-
-        contributingSymptoms.push(response.symptomName);
+        positiveCF = combineCF(positiveCF, symptomCF);
       }
+
+      contributingSymptoms.push(response.symptomName);
     });
 
-    const finalCF = positiveCF * negativePenalty;
+    const finalCF = positiveCF;
     const illness = illnesses.find(i => i.kodePenyakit === diseaseCode);
 
     results.push({
@@ -84,9 +79,6 @@ export async function calculateDiagnosis(responses: SymptomResponse[]): Promise<
 
 export { encodeResponses } from './symptomUtils';
 
-// pakai snapshot yang disimpan saat hasil dibuat (T3) supaya tidak berubah kalau
-// pakar mengedit CF di panel admin belakangan; rekaman lama tanpa snapshot (null)
-// jatuh ke hitung ulang seperti perilaku sebelumnya
 export async function resolveDiagnosisResults(record: {
   responses: string;
   resultsSnapshot?: string | null;
@@ -97,9 +89,7 @@ export async function resolveDiagnosisResults(record: {
       if (Array.isArray(parsed?.responses) && Array.isArray(parsed?.results)) {
         return { responses: parsed.responses, results: parsed.results };
       }
-    } catch {
-      // snapshot rusak/tak terbaca, jatuh ke hitung ulang di bawah
-    }
+    } catch {}
   }
 
   const responses = await decodeResponses(record.responses);
