@@ -5,6 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // hanya izinkan path internal supaya ?next= tidak bisa dipakai mengarahkan ke situs lain
 function safeNext(value: string | null): string | null {
@@ -60,63 +65,58 @@ function LoginForm({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header locale={locale} />
       <main className="flex flex-1 items-center justify-center px-6 py-24 sm:px-8">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-            <h1 className="text-2xl font-bold text-zinc-900">{t.loginTitle}</h1>
-            <p className="mt-2 text-sm text-zinc-600">{t.loginSubtitle}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">{t.loginTitle}</CardTitle>
+              <CardDescription>{t.loginSubtitle}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-5">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-            {error && (
-              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="username">{t.usernameLabel}</Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
 
-            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="username" className="block text-sm font-semibold text-zinc-700">
-                  {t.usernameLabel}
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t.passwordLabel}</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-zinc-700">
-                  {t.passwordLabel}
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
+                <Button type="submit" disabled={loading} className="h-11 w-full text-base">
+                  {loading ? t.loginButtonLoading : t.loginButton}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? t.loginButtonLoading : t.loginButton}
-              </button>
-            </form>
-          </div>
-
-          <p className="mt-6 text-center text-sm text-zinc-600">
-            <Link href={registerHref} className="font-semibold text-blue-600 transition hover:text-blue-700">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            <Link href={registerHref} className="font-semibold text-foreground underline underline-offset-4 transition hover:text-muted-foreground">
               {t.toRegister}
             </Link>
           </p>
@@ -130,10 +130,10 @@ export function LoginPageContent({ locale }: { locale: Locale }) {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen flex-col bg-zinc-50">
+        <div className="flex min-h-screen flex-col bg-background">
           <Header locale={locale} />
           <main className="flex flex-1 items-center justify-center">
-            <p className="text-lg text-zinc-600">Loading...</p>
+            <p className="text-lg text-muted-foreground">Loading...</p>
           </main>
         </div>
       }

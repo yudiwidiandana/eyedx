@@ -5,6 +5,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../../components/Header";
 import { translations, type Locale } from "../../lib/translations";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // hanya izinkan path internal supaya ?next= tidak bisa dipakai mengarahkan ke situs lain
 function safeNext(value: string | null): string | null {
@@ -14,15 +26,13 @@ function safeNext(value: string | null): string | null {
 
 const MIN_PASSWORD_LENGTH = 8;
 
-const fieldClass =
-  "block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 leading-6 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200";
-const inputClass = `mt-2 ${fieldClass}`;
-// appearance-none supaya select menuruti leading-6 dan tingginya sama dengan input
-const selectClass = `${fieldClass} appearance-none pr-10`;
-const labelClass = "block text-sm font-semibold text-zinc-700";
-
 function RegisterForm({ locale }: { locale: Locale }) {
   const t = translations[locale].authPage;
+  const genderLabels: Record<string, string> = {
+    "laki-laki": t.genderMale,
+    perempuan: t.genderFemale,
+    lainnya: t.genderOther,
+  };
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = safeNext(searchParams.get("next"));
@@ -96,145 +106,124 @@ function RegisterForm({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header locale={locale} />
       <main className="flex flex-1 items-center justify-center px-6 py-24 sm:px-8">
         <div className="w-full max-w-lg">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-            <h1 className="text-2xl font-bold text-zinc-900">{t.registerTitle}</h1>
-            <p className="mt-2 text-sm text-zinc-600">{t.registerSubtitle}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">{t.registerTitle}</CardTitle>
+              <CardDescription>{t.registerSubtitle}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-5">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-            {error && (
-              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
-
-            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="username" className={labelClass}>
-                  {t.usernameLabel}
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="name" className={labelClass}>
-                  {t.fullnameLabel}
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="age" className={labelClass}>
-                    {t.ageLabel}
-                  </label>
-                  <input
-                    id="age"
-                    name="age"
-                    type="number"
-                    min="1"
-                    max="150"
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="username">{t.usernameLabel}</Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
                     required
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    className={inputClass}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="h-11"
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="gender" className={labelClass}>
-                    {t.genderLabel}
-                  </label>
-                  <div className="relative mt-2">
-                    <select
-                      id="gender"
+                <div className="space-y-2">
+                  <Label htmlFor="name">{t.fullnameLabel}</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="age">{t.ageLabel}</Label>
+                    <Input
+                      id="age"
+                      name="age"
+                      type="number"
+                      min="1"
+                      max="150"
+                      required
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">{t.genderLabel}</Label>
+                    <Select
+                      value={gender}
+                      onValueChange={(value) => setGender(value ?? "")}
                       name="gender"
                       required
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      className={selectClass}
                     >
-                      <option value="">{t.genderPlaceholder}</option>
-                      <option value="laki-laki">{t.genderMale}</option>
-                      <option value="perempuan">{t.genderFemale}</option>
-                      <option value="lainnya">{t.genderOther}</option>
-                    </select>
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-500"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
-                    </svg>
+                      <SelectTrigger id="gender" className="h-11 w-full">
+                        <SelectValue placeholder={t.genderPlaceholder}>
+                          {(value: string | null) => genderLabels[value ?? ""] ?? t.genderPlaceholder}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="laki-laki">{t.genderMale}</SelectItem>
+                        <SelectItem value="perempuan">{t.genderFemale}</SelectItem>
+                        <SelectItem value="lainnya">{t.genderOther}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="password" className={labelClass}>
-                  {t.passwordLabel}
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={inputClass}
-                  placeholder={t.passwordHint.replace("{min}", String(MIN_PASSWORD_LENGTH))}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t.passwordLabel}</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t.passwordHint.replace("{min}", String(MIN_PASSWORD_LENGTH))}
+                    className="h-11"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className={labelClass}>
-                  {t.confirmPasswordLabel}
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={inputClass}
-                  placeholder={t.confirmPasswordHint}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">{t.confirmPasswordLabel}</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder={t.confirmPasswordHint}
+                    className="h-11"
+                  />
+                </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? t.registerButtonLoading : t.registerButton}
-              </button>
-            </form>
-          </div>
+                <Button type="submit" disabled={loading} className="h-11 w-full text-base">
+                  {loading ? t.registerButtonLoading : t.registerButton}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-          <p className="mt-6 text-center text-sm text-zinc-600">
-            <Link href={loginHref} className="font-semibold text-blue-600 transition hover:text-blue-700">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            <Link href={loginHref} className="font-semibold text-foreground underline underline-offset-4 transition hover:text-muted-foreground">
               {t.toLogin}
             </Link>
           </p>
@@ -248,10 +237,10 @@ export function RegisterPageContent({ locale }: { locale: Locale }) {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen flex-col bg-zinc-50">
+        <div className="flex min-h-screen flex-col bg-background">
           <Header locale={locale} />
           <main className="flex flex-1 items-center justify-center">
-            <p className="text-lg text-zinc-600">Loading...</p>
+            <p className="text-lg text-muted-foreground">Loading...</p>
           </main>
         </div>
       }
