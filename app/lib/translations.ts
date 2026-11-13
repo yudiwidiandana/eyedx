@@ -51,6 +51,7 @@ export const translations = {
       backButton: "Back",
       nextButton: "Next",
       disclaimer: "Important: This analysis is for early detection, not a final medical diagnosis. Please consult with an eye specialist for further treatment.",
+      profileIncomplete: "Your account is missing age and/or gender. Please contact an admin to complete your profile before starting a diagnosis.",
     },
     questionnairePage: {
       title: "Symptom Questionnaire",
@@ -186,6 +187,7 @@ export const translations = {
       backButton: "Kembali",
       nextButton: "Selanjutnya",
       disclaimer: "Penting: Hasil analisis ini adalah deteksi dini, bukan diagnosis final medis. Harap konsultasikan kembali gejala Anda dengan dokter spesialis mata untuk penanganan lebih lanjut.",
+      profileIncomplete: "Akun Anda belum memiliki data umur dan/atau jenis kelamin. Hubungi admin untuk melengkapi profil Anda sebelum memulai diagnosis.",
     },
     questionnairePage: {
       title: "Kuesioner Gejala",

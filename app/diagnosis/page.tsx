@@ -1,25 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
+import { useAuth } from "../lib/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function DiagnosisPageContent({ locale }: { locale: Locale }) {
   const t = translations[locale].diagnosisPage;
   const router = useRouter();
+  const { user, loading } = useAuth();
 
   const genderLabels: Record<string, string> = {
     "laki-laki": t.genderMale,
@@ -27,40 +20,29 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
     lainnya: t.genderOther,
   };
 
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [errors, setErrors] = useState<{ name?: string; age?: string; gender?: string }>({});
-
-  const validateForm = (): boolean => {
-    const newErrors: { name?: string; age?: string; gender?: string } = {};
-
-    if (!name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!age || parseInt(age) <= 0 || parseInt(age) > 150) {
-      newErrors.age = "Valid age is required";
-    }
-
-    if (!gender) {
-      newErrors.gender = "Gender is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const profileIncomplete = !loading && (!user || !user.age || !user.gender);
 
   const handleNext = () => {
-    if (validateForm()) {
-      const params = new URLSearchParams({
-        name: name.trim(),
-        age: age,
-        gender: gender,
-      });
-      router.push(`/${locale === "en" ? "" : locale + "/"}questionnaire?${params.toString()}`);
-    }
+    if (!user || !user.age || !user.gender) return;
+
+    const params = new URLSearchParams({
+      name: user.name,
+      age: String(user.age),
+      gender: user.gender,
+    });
+    router.push(`/${locale === "en" ? "" : locale + "/"}questionnaire?${params.toString()}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Header locale={locale} />
+        <main className="flex flex-1 items-center justify-center">
+          <p className="text-lg text-muted-foreground">Loading...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background pt-8">
@@ -70,52 +52,28 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
           <CardContent>
             <h1 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl">{t.title}</h1>
 
-            <div className="mb-8 grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="name">{t.nameLabel}</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder={t.namePlaceholder}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  aria-invalid={!!errors.name}
-                  className="h-11"
-                />
-                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+            {profileIncomplete ? (
+              <Alert variant="destructive" className="mb-8">
+                <AlertDescription>{t.profileIncomplete}</AlertDescription>
+              </Alert>
+            ) : (
+              <div className="mb-8 grid gap-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground">{t.nameLabel}</p>
+                  <p className="text-lg text-foreground">{user!.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground">{t.ageLabel}</p>
+                  <p className="text-lg text-foreground">{user!.age}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground">{t.genderLabel}</p>
+                  <p className="text-lg text-foreground">
+                    {genderLabels[user!.gender as string] ?? user!.gender}
+                  </p>
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="age">{t.ageLabel}</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  placeholder={t.agePlaceholder}
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  aria-invalid={!!errors.age}
-                  className="h-11"
-                />
-                {errors.age && <p className="text-xs text-destructive">{errors.age}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gender">{t.genderLabel}</Label>
-                <Select value={gender} onValueChange={(value) => setGender(value ?? "")}>
-                  <SelectTrigger id="gender" className="w-full !h-11" aria-invalid={!!errors.gender}>
-                    <SelectValue placeholder={t.genderPlaceholder}>
-                      {(value: string | null) => genderLabels[value ?? ""] ?? t.genderPlaceholder}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="laki-laki">{t.genderMale}</SelectItem>
-                    <SelectItem value="perempuan">{t.genderFemale}</SelectItem>
-                    <SelectItem value="lainnya">{t.genderOther}</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.gender && <p className="text-xs text-destructive">{errors.gender}</p>}
-              </div>
-            </div>
+            )}
 
             <p className="whitespace-pre-line text-lg leading-relaxed text-muted-foreground">{t.description}</p>
           </CardContent>
@@ -130,7 +88,7 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
           >
             {t.backButton}
           </Button>
-          <Button onClick={handleNext} className="h-11 w-full sm:w-auto">
+          <Button onClick={handleNext} disabled={profileIncomplete} className="h-11 w-full sm:w-auto">
             {t.nextButton}
           </Button>
         </div>

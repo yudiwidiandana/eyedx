@@ -27,6 +27,8 @@ export async function GET(req: NextRequest) {
       username: user.username,
       name: user.name,
       role: user.role,
+      age: user.age,
+      gender: user.gender,
     });
   } catch (error) {
     return NextResponse.json(

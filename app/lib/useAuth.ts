@@ -7,6 +7,8 @@ export interface User {
   username: string;
   name: string;
   role: 'user' | 'expert' | 'admin';
+  age: number | null;
+  gender: string | null;
 }
 
 export function useAuth() {
