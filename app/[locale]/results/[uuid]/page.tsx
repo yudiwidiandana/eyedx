@@ -32,7 +32,7 @@ export default async function LocaleSavedResultPage({
     notFound();
   }
 
-  const { responses, results: diagnosisResults } = await resolveDiagnosisResults(record);
+  const { results: diagnosisResults } = await resolveDiagnosisResults(record);
 
   return (
     <ResultsView
@@ -40,7 +40,6 @@ export default async function LocaleSavedResultPage({
       patientName={record.name}
       patientAge={String(record.age)}
       patientGender={record.gender}
-      responses={responses}
       questionsAsked={record.questionsAsked}
       diagnosisResults={diagnosisResults}
       savedUuid={record.id}

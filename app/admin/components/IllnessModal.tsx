@@ -72,7 +72,7 @@ export default function IllnessModal({ isOpen, onClose, onSave, illness }: Illne
         const data = await res.json();
         setError(data.error || "Failed to save illness");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     }
     setLoading(false);

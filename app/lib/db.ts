@@ -533,8 +533,8 @@ export async function updateExpertSystemEntry(no: number, data: Partial<Omit<Exp
     await ensureTables(conn);
     
     const updates: string[] = [];
-    const values: any[] = [];
-    
+    const values: (string | number | null)[] = [];
+
     if (data.kodeGejala !== undefined) {
       updates.push('kode_gejala = ?');
       values.push(data.kodeGejala);

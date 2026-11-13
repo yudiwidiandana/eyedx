@@ -105,7 +105,7 @@ export default function ExpertSystemModal({
         const data = await res.json();
         setError(data.error || "Failed to save expert system entry");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     }
     setLoading(false);

@@ -20,7 +20,6 @@ export interface ResultsViewProps {
   patientName: string;
   patientAge: string;
   patientGender: string;
-  responses: SymptomResponse[];
   questionsAsked: number;
   diagnosisResults: DiagnosisResult[];
   savedUuid?: string;
@@ -31,7 +30,6 @@ export function ResultsView({
   patientName,
   patientAge,
   patientGender,
-  responses,
   questionsAsked,
   diagnosisResults,
   savedUuid,
@@ -468,7 +466,6 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
       patientName={user!.name}
       patientAge={String(user!.age)}
       patientGender={user!.gender ?? ""}
-      responses={responses}
       questionsAsked={questionsAsked}
       diagnosisResults={diagnosisResults}
       savedUuid={savedUuid}

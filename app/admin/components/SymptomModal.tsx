@@ -82,7 +82,7 @@ export default function SymptomModal({ isOpen, onClose, onSave, symptom }: Sympt
         const data = await res.json();
         setError(data.error || "Failed to save symptom");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     }
     setLoading(false);
