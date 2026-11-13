@@ -205,7 +205,8 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
       if (res.ok) {
         loadData();
       } else {
-        alert("Failed to delete entry");
+        const data = await res.json().catch(() => null);
+        alert(data?.error || "Failed to delete entry");
       }
     } catch (error) {
       console.error("Delete error:", error);

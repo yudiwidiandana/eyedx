@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/app/lib/auth";
-import { updateIllness, deleteIllness } from "@/app/lib/db";
+import { updateIllness, deleteIllness, getIllnesses } from "@/app/lib/db";
+
+// P1-P6 hardcoded di seluruh mesin CF (expertSystem.ts), jadi tidak boleh dihapus (T22)
+const CORE_ILLNESS_CODES = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
 
 export async function PUT(
   req: NextRequest,
@@ -62,6 +65,15 @@ export async function DELETE(
     
     if (isNaN(no)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
+    const illnesses = await getIllnesses();
+    const target = illnesses.find(i => i.no === no);
+    if (target && CORE_ILLNESS_CODES.includes(target.kodePenyakit)) {
+      return NextResponse.json(
+        { error: "Penyakit inti (P1-P6) tidak dapat dihapus karena sudah hardcoded di mesin CF" },
+        { status: 400 }
+      );
     }
 
     await deleteIllness(no);
