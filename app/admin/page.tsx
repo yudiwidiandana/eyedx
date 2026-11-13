@@ -105,6 +105,12 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
   }, [user, loading, router]);
 
   useEffect(() => {
+    if (user?.role === "expert") {
+      setActiveTab("expert-system");
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (user && (user.role === "admin" || user.role === "expert")) {
       loadData();
     }
@@ -257,12 +263,16 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
             className="gap-0"
           >
             <TabsList variant="line" className="mb-6 h-auto w-full justify-start gap-6 border-b border-border bg-transparent p-0">
-              <TabsTrigger value="symptoms" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
-                Symptoms ({symptoms.length})
-              </TabsTrigger>
-              <TabsTrigger value="illnesses" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
-                Illnesses ({illnesses.length})
-              </TabsTrigger>
+              {user.role === "admin" && (
+                <>
+                  <TabsTrigger value="symptoms" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
+                    Symptoms ({symptoms.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="illnesses" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
+                    Illnesses ({illnesses.length})
+                  </TabsTrigger>
+                </>
+              )}
               <TabsTrigger value="expert-system" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
                 Expert System ({expertSystem.length})
               </TabsTrigger>

@@ -17,7 +17,7 @@ export async function PUT(
     }
 
     const payload = await verifyToken(token);
-    if (!payload || (payload.role !== 'admin' && payload.role !== 'expert')) {
+    if (!payload || payload.role !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -62,7 +62,7 @@ export async function DELETE(
     }
 
     const payload = await verifyToken(token);
-    if (!payload || (payload.role !== 'admin' && payload.role !== 'expert')) {
+    if (!payload || payload.role !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
