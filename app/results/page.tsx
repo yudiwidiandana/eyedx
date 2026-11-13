@@ -6,6 +6,9 @@ import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
 import type { DiagnosisResult, SymptomResponse } from "../lib/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -36,10 +39,10 @@ export function ResultsView({
 
   if (diagnosisResults.length === 0) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-zinc-600">Loading...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </main>
       </div>
     );
@@ -100,21 +103,21 @@ export function ResultsView({
     const barClasses = getBarClasses(confidence.color);
 
     return (
-      <div
+      <Card
         key={diagnosis.diseaseCode}
-        className={`pt-8 rounded-2xl border bg-white shadow-sm ${
+        className={
           isPrimary
             ? "border-blue-300 bg-blue-50/50 shadow-md ring-1 ring-blue-100"
-            : "border-zinc-200"
-        }`}
+            : ""
+        }
       >
-        <div className={`p-6 ${isPrimary ? "sm:p-8" : ""}`}>
+        <CardContent className={isPrimary ? "sm:px-8" : ""}>
           {/* Header with rank and badge */}
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <span
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
-                  isPrimary ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-600"
+                  isPrimary ? "bg-blue-600 text-white" : "bg-muted text-muted-foreground"
                 }`}
               >
                 {index + 1}
@@ -131,20 +134,20 @@ export function ResultsView({
           </div>
 
           {/* Disease name */}
-          <h3 className={`font-bold text-zinc-900 ${isPrimary ? "text-2xl" : "text-xl"}`}>
+          <h3 className={`font-bold text-foreground ${isPrimary ? "text-2xl" : "text-xl"}`}>
             {diagnosis.diseaseName}
           </h3>
 
           {/* Confidence percentage and progress bar */}
           <div className="mt-3 flex items-baseline gap-2">
-            <span className={`font-bold ${isPrimary ? "text-4xl" : "text-3xl"} text-zinc-900`}>
+            <span className={`font-bold ${isPrimary ? "text-4xl" : "text-3xl"} text-foreground`}>
               {diagnosis.percentage}%
             </span>
-            <span className="text-sm text-zinc-500">{t.confidence}</span>
+            <span className="text-sm text-muted-foreground">{t.confidence}</span>
           </div>
 
           {/* Confidence progress bar */}
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-zinc-200">
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
               className={`h-full ${barClasses} transition-all duration-500`}
               style={{ width: `${Math.max(diagnosis.percentage, 2)}%` }}
@@ -153,36 +156,38 @@ export function ResultsView({
 
           {/* Contributing symptoms */}
           <div className="mt-4">
-            <p className="mb-1 text-sm font-semibold text-zinc-700">
+            <p className="mb-1 text-sm font-semibold text-foreground">
               {t.contributingSymptoms}:
             </p>
-            <p className="text-sm leading-relaxed text-zinc-600">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {formatSymptoms(diagnosis.contributingSymptoms)}
             </p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   };
 
   return (
-    <div className="flex pt-8 min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-background pt-8">
       <Header locale={locale} />
       <main className="flex-1 px-6 py-16 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-4xl space-y-6">
           {/* Page Title */}
-          <h1 className="text-4xl font-bold text-zinc-900">{t.title}</h1>
+          <h1 className="text-4xl font-bold text-foreground">{t.title}</h1>
 
           {/* Efficiency Stats */}
           {questionsAsked > 0 && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <p className="text-sm font-semibold text-blue-900">{t.efficiency}</p>
-              <p className="text-lg text-blue-800">
-                {t.questionsAsked
-                  .replace("{count}", questionsAsked.toString())
-                  .replace("{total}", "39")}
-              </p>
-            </div>
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertDescription className="text-blue-900">
+                <p className="font-semibold">{t.efficiency}</p>
+                <p className="text-lg text-blue-800">
+                  {t.questionsAsked
+                    .replace("{count}", questionsAsked.toString())
+                    .replace("{total}", "39")}
+                </p>
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Saved Result Link */}
@@ -199,27 +204,29 @@ export function ResultsView({
           )}
 
           {/* Patient Information Card */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-semibold text-zinc-900">{t.patientInfo}</h2>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div>
-                <p className="text-sm text-zinc-600">{t.patientName}</p>
-                <p className="text-lg font-medium text-zinc-900">{patientName}</p>
+          <Card>
+            <CardContent>
+              <h2 className="mb-4 text-xl font-semibold text-foreground">{t.patientInfo}</h2>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">{t.patientName}</p>
+                  <p className="text-lg font-medium text-foreground">{patientName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t.patientAge}</p>
+                  <p className="text-lg font-medium text-foreground">{patientAge}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t.patientGender}</p>
+                  <p className="text-lg font-medium text-foreground">{patientGender}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-zinc-600">{t.patientAge}</p>
-                <p className="text-lg font-medium text-zinc-900">{patientAge}</p>
-              </div>
-              <div>
-                <p className="text-sm text-zinc-600">{t.patientGender}</p>
-                <p className="text-lg font-medium text-zinc-900">{patientGender}</p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Diagnosis Results Section */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-zinc-900">{t.allResultsTitle}</h2>
+            <h2 className="text-2xl font-bold text-foreground">{t.allResultsTitle}</h2>
 
             {hasSymptoms ? (
               <>
@@ -229,7 +236,7 @@ export function ResultsView({
                 {/* Other Possibilities */}
                 {otherDiagnoses.length > 0 && (
                   <>
-                    <h3 className="pt-2 text-lg font-semibold text-zinc-700">
+                    <h3 className="pt-2 text-lg font-semibold text-muted-foreground">
                       {t.otherPossibilities}
                     </h3>
                     <div className="space-y-4">
@@ -241,31 +248,36 @@ export function ResultsView({
                 )}
               </>
             ) : (
-              <div className="rounded-lg bg-zinc-50 p-6 text-center">
-                <p className="text-lg text-zinc-700">{t.noSymptomsMessage}</p>
-              </div>
+              <Card>
+                <CardContent className="text-center">
+                  <p className="text-lg text-foreground">{t.noSymptomsMessage}</p>
+                </CardContent>
+              </Card>
             )}
           </div>
 
           {/* Disclaimer */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <p className="text-sm text-amber-900">{t.disclaimer}</p>
-          </div>
+          <Alert className="border-amber-200 bg-amber-50">
+            <AlertDescription className="text-amber-900">{t.disclaimer}</AlertDescription>
+          </Alert>
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-4">
-            <Link
-              href={`/${locale === "en" ? "" : locale + "/"}diagnosis`}
-              className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            <Button
+              render={<Link href={`/${locale === "en" ? "" : locale + "/"}diagnosis`} />}
+              nativeButton={false}
+              className="h-11"
             >
               {t.restartButton}
-            </Link>
-            <Link
-              href={`/${locale === "en" ? "" : locale}`}
-              className="rounded-lg border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50"
+            </Button>
+            <Button
+              variant="outline"
+              render={<Link href={`/${locale === "en" ? "" : locale}`} />}
+              nativeButton={false}
+              className="h-11"
             >
               {t.homeButton}
-            </Link>
+            </Button>
           </div>
         </div>
       </main>
@@ -299,22 +311,25 @@ function SavedResultCard({
   }, []);
 
   return (
-    <div className="rounded-2xl border border-green-300 bg-green-50 p-6 shadow-sm">
-      <h2 className="mb-2 text-xl font-semibold text-green-900">{title}</h2>
-      <p className="mb-3 text-sm text-green-800">{hint}</p>
-      <code className="block w-full rounded-lg border border-green-200 bg-white px-4 py-2 text-sm break-all text-zinc-800">
-        {fullUrl}
-      </code>
-      <div className="mt-3 flex flex-wrap gap-3">
-        <Link
-          href={path}
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700"
-        >
-          {openLabel}
-        </Link>
-        <CopyButton text={fullUrl} label={copyLabel} copiedLabel={copiedLabel} />
-      </div>
-    </div>
+    <Card className="border-green-300 bg-green-50">
+      <CardContent>
+        <h2 className="mb-2 text-xl font-semibold text-green-900">{title}</h2>
+        <p className="mb-3 text-sm text-green-800">{hint}</p>
+        <code className="block w-full rounded-lg border border-green-200 bg-white px-4 py-2 text-sm break-all text-foreground">
+          {fullUrl}
+        </code>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <Button
+            render={<Link href={path} />}
+            nativeButton={false}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {openLabel}
+          </Button>
+          <CopyButton text={fullUrl} label={copyLabel} copiedLabel={copiedLabel} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -340,12 +355,13 @@ function CopyButton({
   };
 
   return (
-    <button
+    <Button
+      variant="outline"
       onClick={handleCopy}
-      className="rounded-lg border border-green-300 bg-white px-4 py-2 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"
+      className="border-green-300 text-green-700 hover:bg-green-50"
     >
       {copied ? copiedLabel : label}
-    </button>
+    </Button>
   );
 }
 
@@ -414,10 +430,10 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
 
   if (loading || responses.length === 0) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-zinc-600">Loading...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </main>
       </div>
     );
@@ -440,10 +456,10 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
 export function ResultsPageContent({ locale }: { locale: Locale }) {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen flex-col bg-zinc-50">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-zinc-600">Loading...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </main>
       </div>
     }>

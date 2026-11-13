@@ -5,10 +5,27 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function DiagnosisPageContent({ locale }: { locale: Locale }) {
   const t = translations[locale].diagnosisPage;
   const router = useRouter();
+
+  const genderLabels: Record<string, string> = {
+    "laki-laki": t.genderMale,
+    perempuan: t.genderFemale,
+    lainnya: t.genderOther,
+  };
 
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
@@ -46,76 +63,79 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="flex pt-8 min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-background pt-8">
       <Header locale={locale} />
       <main className="flex-1 px-4 py-12 sm:px-6 lg:px-12">
-        <div className="mx-auto max-w-4xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-          <h1 className="mb-6 text-3xl font-bold text-zinc-900 sm:text-4xl">{t.title}</h1>
+        <Card className="mx-auto max-w-4xl">
+          <CardContent>
+            <h1 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl">{t.title}</h1>
 
-          <div className="mb-8 grid gap-4 sm:grid-cols-3">
-            <label className="flex flex-col gap-2 text-sm text-zinc-700">
-              <span className="font-semibold">{t.nameLabel}</span>
-              <input
-                type="text"
-                placeholder={t.namePlaceholder}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={`rounded-lg border ${
-                  errors.name ? "border-red-500" : "border-zinc-300"
-                } bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-              />
-              {errors.name && <span className="text-xs text-red-500">{errors.name}</span>}
-            </label>
-            <label className="flex flex-col gap-2 text-sm text-zinc-700">
-              <span className="font-semibold">{t.ageLabel}</span>
-              <input
-                type="number"
-                placeholder={t.agePlaceholder}
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className={`rounded-lg border ${
-                  errors.age ? "border-red-500" : "border-zinc-300"
-                } bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-              />
-              {errors.age && <span className="text-xs text-red-500">{errors.age}</span>}
-            </label>
-            <label className="flex flex-col gap-2 text-sm text-zinc-700">
-              <span className="font-semibold">{t.genderLabel}</span>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className={`rounded-lg border ${
-                  errors.gender ? "border-red-500" : "border-zinc-300"
-                } bg-zinc-50 px-4 py-3 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-              >
-                <option value="">{t.genderPlaceholder}</option>
-                <option value="laki-laki">{t.genderMale}</option>
-                <option value="perempuan">{t.genderFemale}</option>
-                <option value="lainnya">{t.genderOther}</option>
-              </select>
-              {errors.gender && <span className="text-xs text-red-500">{errors.gender}</span>}
-            </label>
-          </div>
+            <div className="mb-8 grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="name">{t.nameLabel}</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder={t.namePlaceholder}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  aria-invalid={!!errors.name}
+                  className="h-11"
+                />
+                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+              </div>
 
-          <p className="whitespace-pre-line text-lg leading-relaxed text-zinc-700">{t.description}</p>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="age">{t.ageLabel}</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  placeholder={t.agePlaceholder}
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  aria-invalid={!!errors.age}
+                  className="h-11"
+                />
+                {errors.age && <p className="text-xs text-destructive">{errors.age}</p>}
+              </div>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <Link
-            href={`/${locale === "en" ? "" : locale}`}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-center text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 sm:w-auto"
+              <div className="space-y-2">
+                <Label htmlFor="gender">{t.genderLabel}</Label>
+                <Select value={gender} onValueChange={(value) => setGender(value ?? "")}>
+                  <SelectTrigger id="gender" className="h-11 w-full" aria-invalid={!!errors.gender}>
+                    <SelectValue placeholder={t.genderPlaceholder}>
+                      {(value: string | null) => genderLabels[value ?? ""] ?? t.genderPlaceholder}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="laki-laki">{t.genderMale}</SelectItem>
+                    <SelectItem value="perempuan">{t.genderFemale}</SelectItem>
+                    <SelectItem value="lainnya">{t.genderOther}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.gender && <p className="text-xs text-destructive">{errors.gender}</p>}
+              </div>
+            </div>
+
+            <p className="whitespace-pre-line text-lg leading-relaxed text-muted-foreground">{t.description}</p>
+          </CardContent>
+        </Card>
+
+        <div className="mx-auto mt-8 flex max-w-4xl flex-col gap-3 sm:flex-row sm:justify-between">
+          <Button
+            variant="outline"
+            render={<Link href={`/${locale === "en" ? "" : locale}`} />}
+            nativeButton={false}
+            className="h-11 w-full sm:w-auto"
           >
             {t.backButton}
-          </Link>
-          <button 
-            onClick={handleNext}
-            className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 sm:w-auto"
-          >
+          </Button>
+          <Button onClick={handleNext} className="h-11 w-full sm:w-auto">
             {t.nextButton}
-          </button>
+          </Button>
         </div>
 
-        <p className="mt-4 text-sm italic text-zinc-500">
+        <p className="mx-auto mt-4 max-w-4xl text-sm italic text-muted-foreground">
           {t.disclaimer}
         </p>
       </main>

@@ -6,6 +6,10 @@ import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
 import { encodeResponses } from "../lib/symptomUtils";
 import { severityCFMap, type SeverityLevel, type SymptomResponse, type Symptom } from "../lib/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +30,7 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   const totalQuestions = allSymptoms.length;
 
   const currentResponse = responses[currentQuestionIndex];
-  const selectedSeverity = currentResponse 
+  const selectedSeverity = currentResponse
     ? (Object.entries(severityCFMap).find(
         ([, cf]) => cf === currentResponse.userCF
       )?.[0] as SeverityLevel) || "none"
@@ -94,10 +98,10 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
 
   if (!patientName || loading || allSymptoms.length === 0) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-zinc-600">Loading...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </main>
       </div>
     );
@@ -107,87 +111,80 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   const answeredCount = responses.filter(r => r.userCF > 0).length;
   const progress = ((answeredCount + 1) / totalQuestions) * 100;
 
+  const severityOptions: { value: SeverityLevel; label: string; activeClass: string }[] = [
+    { value: "none", label: t.severityNone, activeClass: "border-zinc-500 bg-zinc-50" },
+    { value: "mild", label: t.severityMild, activeClass: "border-green-500 bg-green-50" },
+    { value: "moderate", label: t.severityModerate, activeClass: "border-yellow-500 bg-yellow-50" },
+    { value: "fairly-severe", label: t.severityFairlySevere, activeClass: "border-orange-500 bg-orange-50" },
+    { value: "very-severe", label: t.severityVerySevere, activeClass: "border-red-500 bg-red-50" },
+  ];
+
   return (
-    <div className="flex pt-8 min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-background pt-8">
       <Header locale={locale} />
       <main className="relative flex-1 px-6 py-16 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-4xl">
           {/* Progress info */}
           <div className="mb-8">
             <div className="mb-4 flex items-center justify-between text-sm">
-              <p className="text-zinc-600">
+              <p className="text-muted-foreground">
                 Question {currentQuestionIndex + 1} of {totalQuestions}
               </p>
-              <p className="text-zinc-600">
+              <p className="text-muted-foreground">
                 {answeredCount} questions answered
               </p>
             </div>
-            
-            {/* Progress bar */}
-            <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200">
-              <div
-                className="h-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+
+            <Progress value={progress} />
           </div>
 
           {/* Question card */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-            <h1 className="mb-2 text-2xl font-bold text-zinc-900">{t.question}</h1>
-            <p className="mb-8 text-3xl font-semibold text-blue-600">
-              {currentSymptom.namaGejala}
-            </p>
+          <Card>
+            <CardContent>
+              <h1 className="mb-2 text-2xl font-bold text-foreground">{t.question}</h1>
+              <p className="mb-8 text-3xl font-semibold text-primary">
+                {currentSymptom.namaGejala}
+              </p>
 
-            {/* Severity options */}
-            <div className="mb-8">
-              <p className="mb-4 text-sm font-semibold text-zinc-700">{t.severityLabel}</p>
-              <div className="space-y-3">
-                {[
-                  { value: "none" as SeverityLevel, label: t.severityNone, activeClass: "border-zinc-500 bg-zinc-50" },
-                  { value: "mild" as SeverityLevel, label: t.severityMild, activeClass: "border-green-500 bg-green-50" },
-                  { value: "moderate" as SeverityLevel, label: t.severityModerate, activeClass: "border-yellow-500 bg-yellow-50" },
-                  { value: "fairly-severe" as SeverityLevel, label: t.severityFairlySevere, activeClass: "border-orange-500 bg-orange-50" },
-                  { value: "very-severe" as SeverityLevel, label: t.severityVerySevere, activeClass: "border-red-500 bg-red-50" },
-                ].map(({ value, label, activeClass }) => (
-                  <label
-                    key={value}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition ${
-                      selectedSeverity === value
-                        ? activeClass
-                        : "border-zinc-200 bg-white hover:border-zinc-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="severity"
-                      value={value}
-                      checked={selectedSeverity === value}
-                      onChange={() => handleSeverityChange(value)}
-                      className="h-5 w-5 cursor-pointer"
-                    />
-                    <span className="text-lg font-medium text-zinc-900">{label}</span>
-                  </label>
-                ))}
+              {/* Severity options */}
+              <div className="mb-8">
+                <p className="mb-4 text-sm font-semibold text-foreground">{t.severityLabel}</p>
+                <RadioGroup
+                  value={selectedSeverity}
+                  onValueChange={(value) => handleSeverityChange(value as SeverityLevel)}
+                  className="space-y-3"
+                >
+                  {severityOptions.map(({ value, label, activeClass }) => (
+                    <label
+                      key={value}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition ${
+                        selectedSeverity === value
+                          ? activeClass
+                          : "border-border bg-background hover:border-muted-foreground/40"
+                      }`}
+                    >
+                      <RadioGroupItem value={value} className="size-5" />
+                      <span className="text-lg font-medium text-foreground">{label}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Navigation buttons */}
           <div className="mt-8 flex items-center justify-between gap-4">
-            <button
+            <Button
+              variant="outline"
               onClick={handleBack}
               disabled={currentQuestionIndex === 0}
-              className="rounded-lg border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-11"
             >
               {t.backButton}
-            </button>
-            <button
-              onClick={handleNext}
-              className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-            >
+            </Button>
+            <Button onClick={handleNext} className="h-11">
               {currentQuestionIndex === totalQuestions - 1 ? t.finishButton : t.nextButton}
-            </button>
+            </Button>
           </div>
         </div>
       </main>
@@ -198,10 +195,10 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
 export function QuestionnairePageContent({ locale }: { locale: Locale }) {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen flex-col bg-zinc-50">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-zinc-600">Loading...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </main>
       </div>
     }>
