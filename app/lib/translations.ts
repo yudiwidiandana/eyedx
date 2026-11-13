@@ -38,7 +38,7 @@ export const translations = {
     diagnosisPage: {
       title: "Eye Disease Diagnosis",
       description:
-        "INDICATOR OF SYMPTOM SEVERITY LEVEL:\n• MILD: Rarely appears, does not interfere with activities.\n• MODERATE: Appears several times a day, activities remain normal.\n• FAIRLY SEVERE: Often appears, somewhat difficult to resist, begins to interfere with activities.\n• VERY SEVERE: Continually appears, very painful and interferes with activities.",
+        "INDICATOR OF SYMPTOM SEVERITY LEVEL:\n• MILD: Symptom begins to be felt, does not interfere with activities\n• MODERATE: Symptom is felt quite clearly and slightly interferes with activities\n• FAIRLY SEVERE: Symptom is often felt, somewhat difficult to endure, begins to interfere with activities\n• VERY SEVERE: Symptom appears continuously and greatly interferes with activities",
       nameLabel: "Name",
       namePlaceholder: "Enter your name",
       ageLabel: "Age",
