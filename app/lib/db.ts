@@ -409,17 +409,22 @@ export async function createSymptom(data: Omit<Symptom, 'no'>): Promise<number> 
   try {
     conn = await pool.getConnection();
     await ensureTables(conn);
-    
-    // Get next available no
-    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM symptoms`);
+    await conn.beginTransaction();
+
+    // SELECT MAX(no) + INSERT dibungkus transaksi supaya tidak tabrakan nomor (T26)
+    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM symptoms FOR UPDATE`);
     const nextNo = (rows[0]?.maxNo || 0) + 1;
-    
+
     await conn.query(
       `INSERT INTO symptoms (no, kode_gejala, nama_gejala, symptoms_name)
        VALUES (?, ?, ?, ?)`,
       [nextNo, data.kodeGejala, data.namaGejala, data.symptomsName]
     );
+    await conn.commit();
     return nextNo;
+  } catch (error) {
+    if (conn) await conn.rollback();
+    throw error;
   } finally {
     if (conn) conn.release();
   }
@@ -460,17 +465,22 @@ export async function createIllness(data: Omit<Illness, 'no'>): Promise<number> 
   try {
     conn = await pool.getConnection();
     await ensureTables(conn);
-    
-    // Get next available no
-    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM illnesses`);
+    await conn.beginTransaction();
+
+    // SELECT MAX(no) + INSERT dibungkus transaksi supaya tidak tabrakan nomor (T26)
+    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM illnesses FOR UPDATE`);
     const nextNo = (rows[0]?.maxNo || 0) + 1;
-    
+
     await conn.query(
       `INSERT INTO illnesses (no, kode_penyakit, nama_penyakit)
        VALUES (?, ?, ?)`,
       [nextNo, data.kodePenyakit, data.namaPenyakit]
     );
+    await conn.commit();
     return nextNo;
+  } catch (error) {
+    if (conn) await conn.rollback();
+    throw error;
   } finally {
     if (conn) conn.release();
   }
@@ -510,17 +520,22 @@ export async function createExpertSystemEntry(data: Omit<ExpertSystemEntry, 'no'
   try {
     conn = await pool.getConnection();
     await ensureTables(conn);
-    
-    // Get next available no
-    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM expert_system`);
+    await conn.beginTransaction();
+
+    // SELECT MAX(no) + INSERT dibungkus transaksi supaya tidak tabrakan nomor (T26)
+    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM expert_system FOR UPDATE`);
     const nextNo = (rows[0]?.maxNo || 0) + 1;
-    
+
     await conn.query(
       `INSERT INTO expert_system (no, kode_gejala, cf_p1, cf_p2, cf_p3, cf_p4, cf_p5, cf_p6)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [nextNo, data.kodeGejala, data.cf.P1, data.cf.P2, data.cf.P3, data.cf.P4, data.cf.P5, data.cf.P6]
     );
+    await conn.commit();
     return nextNo;
+  } catch (error) {
+    if (conn) await conn.rollback();
+    throw error;
   } finally {
     if (conn) conn.release();
   }
