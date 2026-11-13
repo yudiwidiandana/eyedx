@@ -23,7 +23,7 @@ export const translations = {
       intro2:
         "By utilizing the Certainty Factor method, we help you identify potential eye conditions quickly and easily before consulting further with healthcare facilities.",
       heading: "Key Features",
-      features: ["Fast and responsive early screening", "Utilizes the scientific Certainty Factor method", "Easy to use without mandatory login", "Instant analysis results"],
+      features: ["Fast and responsive early screening", "Utilizes the scientific Certainty Factor method", "Quick sign-up, results saved to your account", "Instant analysis results"],
       validationTitle: "Medical Validation",
       validationText:
         "All knowledge base rules and inference logic in EyeDx are developed and validated directly by eye specialist Dr. I Gusti Ngurah Anom Supradnya, Sp.M.",
@@ -157,7 +157,7 @@ export const translations = {
       features: [
         "Skrining awal cepat dan responsif",
         "Menggunakan metode Certainty Factor ilmiah",
-        "Mudah digunakan tanpa wajib login",
+        "Daftar cepat, hasil tersimpan di akun Anda",
         "Hasil analisis instan",
       ],
       validationTitle: "Validasi Medis",
