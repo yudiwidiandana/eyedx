@@ -25,6 +25,9 @@ export interface SavedDiagnosisResult {
   questionsAsked: number;
   createdAt: Date;
   userId?: string;
+  // JSON dari { responses, results } pada saat disimpan — null untuk rekaman lama
+  // sebelum kolom ini ada (lihat T3 di BLUEPRINT.md), yang berarti harus dihitung ulang
+  resultsSnapshot?: string | null;
 }
 
 export interface User {
@@ -100,16 +103,23 @@ async function ensureTables(conn: PoolConnection) {
   `);
   await conn.query(`
     CREATE TABLE IF NOT EXISTS diagnosis_results (
-      id              VARCHAR(36)  PRIMARY KEY,
-      name            VARCHAR(100) NOT NULL,
-      age             INT          NOT NULL,
-      gender          VARCHAR(20)  NOT NULL,
-      responses       TEXT         NOT NULL,
-      questions_asked INT          NOT NULL,
-      created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-      user_id         VARCHAR(36),
+      id                VARCHAR(36)  PRIMARY KEY,
+      name              VARCHAR(100) NOT NULL,
+      age               INT          NOT NULL,
+      gender            VARCHAR(20)  NOT NULL,
+      responses         TEXT         NOT NULL,
+      questions_asked   INT          NOT NULL,
+      created_at        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+      user_id           VARCHAR(36),
+      results_snapshot  LONGTEXT     NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
     )
+  `);
+
+  // migrasi untuk database lama yang tabelnya sudah ada sebelum kolom ini (T3)
+  await conn.query(`
+    ALTER TABLE diagnosis_results
+      ADD COLUMN IF NOT EXISTS results_snapshot LONGTEXT NULL
   `);
 }
 
@@ -119,6 +129,7 @@ export async function saveDiagnosisResult(data: {
   gender: string;
   responses: string;
   questionsAsked: number;
+  resultsSnapshot?: string;
 }, userId?: string): Promise<string> {
   const id = crypto.randomUUID();
   let conn: PoolConnection | null = null;
@@ -127,9 +138,9 @@ export async function saveDiagnosisResult(data: {
     conn = await pool.getConnection();
     await ensureTables(conn);
     await conn.query(
-      `INSERT INTO diagnosis_results (id, name, age, gender, responses, questions_asked, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, data.name, data.age, data.gender, data.responses, data.questionsAsked, userId || null]
+      `INSERT INTO diagnosis_results (id, name, age, gender, responses, questions_asked, user_id, results_snapshot)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, data.name, data.age, data.gender, data.responses, data.questionsAsked, userId || null, data.resultsSnapshot || null]
     );
     return id;
   } finally {
@@ -144,7 +155,7 @@ export async function getDiagnosisResult(id: string): Promise<SavedDiagnosisResu
     conn = await pool.getConnection();
     await ensureTables(conn);
     const rows = await conn.query(
-      `SELECT id, name, age, gender, responses, questions_asked, created_at, user_id
+      `SELECT id, name, age, gender, responses, questions_asked, created_at, user_id, results_snapshot
        FROM diagnosis_results WHERE id = ?`,
       [id]
     );
@@ -160,6 +171,7 @@ export async function getDiagnosisResult(id: string): Promise<SavedDiagnosisResu
       questionsAsked: row.questions_asked,
       createdAt: new Date(row.created_at),
       userId: row.user_id,
+      resultsSnapshot: row.results_snapshot,
     };
   } finally {
     if (conn) conn.release();

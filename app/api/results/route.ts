@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveDiagnosisResult } from "../../lib/db";
 import { verifyToken } from "../../lib/auth";
+import { calculateDiagnosis, decodeResponses } from "../../lib/expertSystem";
 
 export const dynamic = "force-dynamic";
 
@@ -42,12 +43,25 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // hitung di sisi server dari string jawaban mentah, lalu simpan hasilnya sebagai
+    // snapshot supaya hasil ini tidak ikut berubah kalau pakar mengubah CF di panel admin (T3)
+    let resultsSnapshot: string | undefined;
+    const decodedResponses = await decodeResponses(responses);
+    if (decodedResponses.length > 0) {
+      const diagnosisResults = await calculateDiagnosis(decodedResponses);
+      resultsSnapshot = JSON.stringify({
+        responses: decodedResponses,
+        results: diagnosisResults,
+      });
+    }
+
     const id = await saveDiagnosisResult({
       name,
       age: Math.floor(age),
       gender,
       responses,
       questionsAsked,
+      resultsSnapshot,
     }, userId);
     return NextResponse.json({ id, url: `/results/${id}` });
   } catch (error) {

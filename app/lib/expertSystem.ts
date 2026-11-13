@@ -88,6 +88,29 @@ export async function getAllSymptoms(): Promise<Symptom[]> {
 
 export { encodeResponses } from './symptomUtils';
 
+// pakai snapshot yang disimpan saat hasil dibuat (T3) supaya tidak berubah kalau
+// pakar mengedit CF di panel admin belakangan; rekaman lama tanpa snapshot (null)
+// jatuh ke hitung ulang seperti perilaku sebelumnya
+export async function resolveDiagnosisResults(record: {
+  responses: string;
+  resultsSnapshot?: string | null;
+}): Promise<{ responses: SymptomResponse[]; results: DiagnosisResult[] }> {
+  if (record.resultsSnapshot) {
+    try {
+      const parsed = JSON.parse(record.resultsSnapshot);
+      if (Array.isArray(parsed?.responses) && Array.isArray(parsed?.results)) {
+        return { responses: parsed.responses, results: parsed.results };
+      }
+    } catch {
+      // snapshot rusak/tak terbaca, jatuh ke hitung ulang di bawah
+    }
+  }
+
+  const responses = await decodeResponses(record.responses);
+  const results = await calculateDiagnosis(responses);
+  return { responses, results };
+}
+
 export async function decodeResponses(encoded: string): Promise<SymptomResponse[]> {
   if (!encoded) return [];
 

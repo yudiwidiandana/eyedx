@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getDiagnosisResult } from "../../lib/db";
 import { getSessionUser } from "../../lib/auth";
-import { decodeResponses, calculateDiagnosis } from "../../lib/expertSystem";
+import { resolveDiagnosisResults } from "../../lib/expertSystem";
 import { ResultsView } from "../page";
 
 export const dynamic = "force-dynamic";
@@ -26,8 +26,7 @@ export default async function SavedResultPage({
     notFound();
   }
 
-  const responses = await decodeResponses(record.responses);
-  const diagnosisResults = await calculateDiagnosis(responses);
+  const { responses, results: diagnosisResults } = await resolveDiagnosisResults(record);
 
   return (
     <ResultsView
