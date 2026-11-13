@@ -1,8 +1,16 @@
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { createUser, getUserByUsername } from "./db";
 import { signToken, verifyToken } from "./jwt";
 
 export { signToken, verifyToken };
+
+// dipakai di server component (bukan API route) untuk baca sesi dari cookie httpOnly
+export async function getSessionUser(): Promise<{ sub: string; role: string } | null> {
+  const token = (await cookies()).get("next-auth.session-token")?.value;
+  if (!token) return null;
+  return verifyToken(token);
+}
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);

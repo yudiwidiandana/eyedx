@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getDiagnosisResult } from "../../lib/db";
+import { getSessionUser } from "../../lib/auth";
 import { decodeResponses, calculateDiagnosis } from "../../lib/expertSystem";
 import { ResultsView } from "../page";
 
@@ -14,6 +15,14 @@ export default async function SavedResultPage({
   const record = await getDiagnosisResult(uuid);
 
   if (!record) {
+    notFound();
+  }
+
+  // hanya pemilik hasil atau admin/expert yang boleh membukanya
+  const sessionUser = await getSessionUser();
+  const isOwner = !!sessionUser && sessionUser.sub === record.userId;
+  const isStaff = sessionUser?.role === "admin" || sessionUser?.role === "expert";
+  if (!isOwner && !isStaff) {
     notFound();
   }
 
