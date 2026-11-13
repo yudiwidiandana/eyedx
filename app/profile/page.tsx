@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
+import { type Locale } from "../lib/translations";
 
 interface HistoryItem {
   id: string;
@@ -15,15 +16,18 @@ interface HistoryItem {
   createdAt: string;
 }
 
-export default function ProfilePage() {
+export function ProfilePageContent({ locale }: { locale: Locale }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
+  const path = (segment: string) =>
+    `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`;
+
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      router.push(path("login"));
     }
   }, [loading, user, router]);
 
@@ -45,7 +49,7 @@ export default function ProfilePage() {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen flex-col bg-gray-50">
-        <Header locale="en" />
+        <Header locale={locale} />
         <div className="flex flex-1 items-center justify-center">
           <p>Loading...</p>
         </div>
@@ -55,7 +59,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 px-4">
-      <Header locale="en" />
+      <Header locale={locale} />
       <div className="max-w-6xl mx-auto py-8">
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Profile</h1>
@@ -81,7 +85,7 @@ export default function ProfilePage() {
             <div className="text-center py-8">
               <p className="text-gray-600 mb-4">No diagnosis history yet</p>
               <Link
-                href="/diagnosis"
+                href={path("diagnosis")}
                 className="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Start Diagnosis
@@ -132,7 +136,7 @@ export default function ProfilePage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
-                          href={`/results/${item.id}`}
+                          href={`${path("results")}/${item.id}`}
                           className="text-blue-600 hover:text-blue-800"
                         >
                           View Result
@@ -148,4 +152,8 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
+
+export default function ProfilePage() {
+  return <ProfilePageContent locale="en" />;
 }

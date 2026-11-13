@@ -5,6 +5,7 @@ import { useAuth } from "../lib/useAuth";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
 import Header from "../components/Header";
+import { type Locale } from "../lib/translations";
 import SymptomModal from "./components/SymptomModal";
 import IllnessModal from "./components/IllnessModal";
 import ExpertSystemModal from "./components/ExpertSystemModal";
@@ -72,9 +73,11 @@ interface ExpertSystemEntry {
 
 type TabType = "symptoms" | "illnesses" | "expert-system" | "users";
 
-export default function AdminPage() {
+export function AdminPageContent({ locale }: { locale: Locale }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const path = (segment: string) =>
+    `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`;
   const [activeTab, setActiveTab] = useState<TabType>("symptoms");
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
   const [illnesses, setIllnesses] = useState<Illness[]>([]);
@@ -97,7 +100,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== "admin" && user.role !== "expert"))) {
-      router.push("/");
+      router.push(path(""));
     }
   }, [user, loading, router]);
 
@@ -227,7 +230,7 @@ export default function AdminPage() {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
-        <Header locale="en" />
+        <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
           <p className="text-lg text-muted-foreground">Loading...</p>
         </main>
@@ -261,7 +264,7 @@ export default function AdminPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header locale="en" />
+      <Header locale={locale} />
       <main className="flex-1 px-6 py-24 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl">
           <h1 className="mb-8 text-4xl font-bold text-foreground">Admin Panel - Master Data</h1>
@@ -598,4 +601,8 @@ export default function AdminPage() {
       </AlertDialog>
     </div>
   );
+}
+
+export default function AdminPage() {
+  return <AdminPageContent locale="en" />;
 }
