@@ -1,29 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/app/lib/auth";
 import { hashPassword } from "@/app/lib/auth";
+import { requireRole } from "@/app/lib/requireRole";
 import { getUsers, getUserByUsername, createUser } from "@/app/lib/db";
 import { validateNewUser, isValidRole } from "@/app/lib/userValidation";
 
-async function requireAdmin(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '') ||
-                req.cookies.get("next-auth.session-token")?.value;
-
-  if (!token) {
-    return { error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
-  }
-
-  const payload = await verifyToken(token);
-  if (!payload || payload.role !== 'admin') {
-    return { error: NextResponse.json({ error: "Unauthorized - Admin only" }, { status: 403 }) };
-  }
-
-  return { payload };
-}
-
 export async function GET(req: NextRequest) {
   try {
-    const { error } = await requireAdmin(req);
+    const { error } = await requireRole(req, ['admin']);
     if (error) return error;
 
     const users = await getUsers();
@@ -38,7 +21,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { error } = await requireAdmin(req);
+    const { error } = await requireRole(req, ['admin']);
     if (error) return error;
 
     const body = await req.json();
