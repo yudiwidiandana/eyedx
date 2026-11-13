@@ -1,6 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ExpertSystemModalProps {
   isOpen: boolean;
@@ -68,7 +86,7 @@ export default function ExpertSystemModal({
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -109,70 +127,72 @@ export default function ExpertSystemModal({
     });
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold text-zinc-900 mb-4">
-          {entry ? "Edit Expert System Entry" : "Add New Expert System Entry"}
-        </h2>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>
+            {entry ? "Edit Expert System Entry" : "Add New Expert System Entry"}
+          </DialogTitle>
+        </DialogHeader>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-1">
-                Symptom
-              </label>
+            <div className="space-y-2">
+              <Label htmlFor="kodeGejala">Symptom</Label>
               {entry ? (
-                <input
-                  type="text"
-                  value={formData.kodeGejala}
-                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg bg-zinc-100"
-                  disabled
-                />
+                <Input id="kodeGejala" type="text" value={formData.kodeGejala} disabled className="h-11" />
               ) : (
-                <select
+                <Select
                   value={formData.kodeGejala}
-                  onChange={(e) => setFormData({ ...formData, kodeGejala: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onValueChange={(value) => setFormData({ ...formData, kodeGejala: value ?? "" })}
                   required
                 >
-                  <option value="">Select symptom...</option>
-                  {symptoms.map((symptom) => (
-                    <option key={symptom.kodeGejala} value={symptom.kodeGejala}>
-                      {symptom.kodeGejala} - {symptom.namaGejala}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="kodeGejala" className="w-full !h-11">
+                    <SelectValue placeholder="Select symptom...">
+                      {(value: string | null) => {
+                        const match = symptoms.find((s) => s.kodeGejala === value);
+                        return match ? `${match.kodeGejala} - ${match.namaGejala}` : "Select symptom...";
+                      }}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {symptoms.map((symptom) => (
+                      <SelectItem key={symptom.kodeGejala} value={symptom.kodeGejala}>
+                        {symptom.kodeGejala} - {symptom.namaGejala}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 mb-3">
+              <h3 className="mb-3 text-lg font-semibold text-foreground">
                 Certainty Factors (0.0 - 1.0 or leave empty for null)
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {illnesses.map((illness) => (
-                  <div key={illness.kodePenyakit}>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                  <div key={illness.kodePenyakit} className="space-y-2">
+                    <Label htmlFor={`cf-${illness.kodePenyakit}`}>
                       {illness.kodePenyakit} - {illness.namaPenyakit}
-                    </label>
-                    <input
+                    </Label>
+                    <Input
+                      id={`cf-${illness.kodePenyakit}`}
                       type="number"
                       step="0.1"
                       min="0"
                       max="1"
                       value={formData.cf[illness.kodePenyakit as keyof typeof formData.cf] ?? ""}
                       onChange={(e) => handleCFChange(illness.kodePenyakit, e.target.value)}
-                      className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="0.0 - 1.0 or empty"
+                      className="h-11"
                     />
                   </div>
                 ))}
@@ -180,25 +200,16 @@ export default function ExpertSystemModal({
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-zinc-300 rounded-lg text-zinc-700 hover:bg-zinc-50"
-              disabled={loading}
-            >
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              disabled={loading}
-            >
+            </Button>
+            <Button type="submit" disabled={loading}>
               {loading ? "Saving..." : "Save"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

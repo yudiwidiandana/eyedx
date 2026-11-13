@@ -1,6 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface AdminUser {
   id: string;
@@ -21,9 +40,17 @@ interface UserModalProps {
 
 const MIN_PASSWORD_LENGTH = 8;
 
-const fieldClass =
-  "block w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 leading-6 text-zinc-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200";
-const labelClass = "block text-sm font-medium text-zinc-700";
+const genderLabels: Record<string, string> = {
+  "laki-laki": "Male",
+  perempuan: "Female",
+  lainnya: "Other",
+};
+
+const roleLabels: Record<AdminUser["role"], string> = {
+  user: "User",
+  expert: "Expert",
+  admin: "Admin",
+};
 
 export default function UserModal({ isOpen, onClose, onSave, user, currentUserId }: UserModalProps) {
   const isEdit = !!user;
@@ -117,54 +144,54 @@ export default function UserModal({ isOpen, onClose, onSave, user, currentUserId
     setLoading(false);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-bold text-zinc-900">
-          {isEdit ? "Edit User" : "Add New User"}
-        </h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          {isEdit ? "Username cannot be changed. Leave password blank to keep it." : "The account can sign in immediately after being created."}
-        </p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? "Edit User" : "Add New User"}</DialogTitle>
+          <DialogDescription>
+            {isEdit
+              ? "Username cannot be changed. Leave password blank to keep it."
+              : "The account can sign in immediately after being created."}
+          </DialogDescription>
+        </DialogHeader>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
-        <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="u-username" className={labelClass}>Username</label>
-            <input
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="u-username">Username</Label>
+            <Input
               id="u-username"
               type="text"
               required
               disabled={isEdit}
               value={username}
               onChange={(e) => ubah({ username: e.target.value })}
-              className={`mt-1 ${fieldClass} disabled:bg-zinc-100 disabled:text-zinc-500`}
+              className="h-11"
             />
           </div>
 
-          <div>
-            <label htmlFor="u-name" className={labelClass}>Full Name</label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="u-name">Full Name</Label>
+            <Input
               id="u-name"
               type="text"
               required
               value={name}
               onChange={(e) => ubah({ name: e.target.value })}
-              className={`mt-1 ${fieldClass}`}
+              className="h-11"
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="u-age" className={labelClass}>Age</label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="u-age">Age</Label>
+              <Input
                 id="u-age"
                 type="number"
                 min="1"
@@ -172,94 +199,88 @@ export default function UserModal({ isOpen, onClose, onSave, user, currentUserId
                 required
                 value={age}
                 onChange={(e) => ubah({ age: e.target.value })}
-                className={`mt-1 ${fieldClass}`}
+                className="h-11"
               />
             </div>
-            <div>
-              <label htmlFor="u-gender" className={labelClass}>Gender</label>
-              <select
-                id="u-gender"
-                required
-                value={gender}
-                onChange={(e) => ubah({ gender: e.target.value })}
-                className={fieldClass + " mt-1"}
-              >
-                <option value="">Select gender</option>
-                <option value="laki-laki">Male</option>
-                <option value="perempuan">Female</option>
-                <option value="lainnya">Other</option>
-              </select>
+            <div className="space-y-2">
+              <Label htmlFor="u-gender">Gender</Label>
+              <Select value={gender} onValueChange={(value) => ubah({ gender: value ?? "" })} required>
+                <SelectTrigger id="u-gender" className="w-full !h-11">
+                  <SelectValue placeholder="Select gender">
+                    {(value: string | null) => genderLabels[value ?? ""] ?? "Select gender"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="laki-laki">Male</SelectItem>
+                  <SelectItem value="perempuan">Female</SelectItem>
+                  <SelectItem value="lainnya">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="u-password" className={labelClass}>
-                {isEdit ? "New Password" : "Password"}
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="u-password">{isEdit ? "New Password" : "Password"}</Label>
+              <Input
                 id="u-password"
                 type="password"
                 required={!isEdit}
                 value={password}
                 onChange={(e) => ubah({ password: e.target.value })}
-                className={`mt-1 ${fieldClass}`}
                 placeholder={isEdit ? "Leave blank to keep current" : `At least ${MIN_PASSWORD_LENGTH} characters`}
+                className="h-11"
               />
             </div>
-            <div>
-              <label htmlFor="u-confirm" className={labelClass}>Confirm Password</label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="u-confirm">Confirm Password</Label>
+              <Input
                 id="u-confirm"
                 type="password"
                 required={!isEdit || !!password}
                 disabled={isEdit && !password}
                 value={confirmPassword}
                 onChange={(e) => ubah({ confirmPassword: e.target.value })}
-                className={`mt-1 ${fieldClass} disabled:bg-zinc-100 disabled:text-zinc-500`}
                 placeholder="Re-enter password"
+                className="h-11"
               />
             </div>
           </div>
 
-          <div>
-            <label htmlFor="u-role" className={labelClass}>Role</label>
-            <select
-              id="u-role"
-              required
-              disabled={isSelf}
+          <div className="space-y-2">
+            <Label htmlFor="u-role">Role</Label>
+            <Select
               value={role}
-              onChange={(e) => ubah({ role: e.target.value as AdminUser["role"] })}
-              className={`mt-1 ${fieldClass} disabled:bg-zinc-100 disabled:text-zinc-500`}
+              onValueChange={(value) => ubah({ role: (value ?? "user") as AdminUser["role"] })}
+              disabled={isSelf}
+              required
             >
-              <option value="user">User</option>
-              <option value="expert">Expert</option>
-              <option value="admin">Admin</option>
-            </select>
+              <SelectTrigger id="u-role" className="w-full !h-11">
+                <SelectValue placeholder="Select role">
+                  {(value: string | null) => roleLabels[(value ?? "user") as AdminUser["role"]]}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">User</SelectItem>
+                <SelectItem value="expert">Expert</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
             {isSelf && (
-              <p className="mt-1 text-xs text-zinc-500">You cannot change your own role.</p>
+              <p className="text-xs text-muted-foreground">You cannot change your own role.</p>
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
-            >
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || isSelf}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={loading || isSelf}>
               {loading ? "Saving..." : "Save"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

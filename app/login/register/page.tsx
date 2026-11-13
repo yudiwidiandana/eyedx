@@ -173,7 +173,7 @@ function RegisterForm({ locale }: { locale: Locale }) {
                       name="gender"
                       required
                     >
-                      <SelectTrigger id="gender" className="h-11 w-full">
+                      <SelectTrigger id="gender" className="w-full !h-11">
                         <SelectValue placeholder={t.genderPlaceholder}>
                           {(value: string | null) => genderLabels[value ?? ""] ?? t.genderPlaceholder}
                         </SelectValue>

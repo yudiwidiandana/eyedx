@@ -102,7 +102,7 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
               <div className="space-y-2">
                 <Label htmlFor="gender">{t.genderLabel}</Label>
                 <Select value={gender} onValueChange={(value) => setGender(value ?? "")}>
-                  <SelectTrigger id="gender" className="h-11 w-full" aria-invalid={!!errors.gender}>
+                  <SelectTrigger id="gender" className="w-full !h-11" aria-invalid={!!errors.gender}>
                     <SelectValue placeholder={t.genderPlaceholder}>
                       {(value: string | null) => genderLabels[value ?? ""] ?? t.genderPlaceholder}
                     </SelectValue>

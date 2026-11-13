@@ -3,11 +3,34 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../lib/useAuth";
 import { useRouter } from "next/navigation";
+import { Pencil, Trash2 } from "lucide-react";
 import Header from "../components/Header";
 import SymptomModal from "./components/SymptomModal";
 import IllnessModal from "./components/IllnessModal";
 import ExpertSystemModal from "./components/ExpertSystemModal";
 import UserModal, { type AdminUser } from "./components/UserModal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 const roleBadgeClass: Record<AdminUser["role"], string> = {
   admin: "bg-blue-100 text-blue-800",
@@ -59,16 +82,18 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   const [symptomModalOpen, setSymptomModalOpen] = useState(false);
   const [illnessModalOpen, setIllnessModalOpen] = useState(false);
   const [expertSystemModalOpen, setExpertSystemModalOpen] = useState(false);
-  
+
   const [editingSymptom, setEditingSymptom] = useState<Symptom | undefined>(undefined);
   const [editingIllness, setEditingIllness] = useState<Illness | undefined>(undefined);
   const [editingExpertSystem, setEditingExpertSystem] = useState<ExpertSystemEntry | undefined>(undefined);
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | undefined>(undefined);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== "admin" && user.role !== "expert"))) {
@@ -88,7 +113,7 @@ export default function AdminPage() {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -153,16 +178,20 @@ export default function AdminPage() {
     loadData();
   };
 
-  const handleDelete = async (no: number) => {
-    if (!confirm("Are you sure you want to delete this entry?")) {
-      return;
-    }
+  const handleDelete = (no: number) => {
+    setDeleteTarget(no);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget === null) return;
+    const no = deleteTarget;
+    setDeleting(true);
 
     const token = localStorage.getItem('auth_token');
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -191,14 +220,16 @@ export default function AdminPage() {
       console.error("Delete error:", error);
       alert("Failed to delete entry");
     }
+    setDeleting(false);
+    setDeleteTarget(null);
   };
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen flex-col bg-zinc-50">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header locale="en" />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-zinc-600">Loading...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </main>
       </div>
     );
@@ -229,358 +260,285 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header locale="en" />
       <main className="flex-1 px-6 py-24 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl">
-          <h1 className="text-4xl font-bold text-zinc-900 mb-8">Admin Panel - Master Data</h1>
+          <h1 className="mb-8 text-4xl font-bold text-foreground">Admin Panel - Master Data</h1>
 
-          {/* Tab Navigation */}
-          <div className="border-b border-zinc-200 mb-6">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab("symptoms")}
-                className={`${
-                  activeTab === "symptoms"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-zinc-600 hover:text-zinc-900 hover:border-zinc-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as TabType)}
+            className="gap-0"
+          >
+            <TabsList variant="line" className="mb-6 h-auto w-full justify-start gap-6 border-b border-border bg-transparent p-0">
+              <TabsTrigger value="symptoms" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
                 Symptoms ({symptoms.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("illnesses")}
-                className={`${
-                  activeTab === "illnesses"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-zinc-600 hover:text-zinc-900 hover:border-zinc-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
+              </TabsTrigger>
+              <TabsTrigger value="illnesses" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
                 Illnesses ({illnesses.length})
-              </button>
-              <button
-                onClick={() => setActiveTab("expert-system")}
-                className={`${
-                  activeTab === "expert-system"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-zinc-600 hover:text-zinc-900 hover:border-zinc-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
+              </TabsTrigger>
+              <TabsTrigger value="expert-system" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
                 Expert System ({expertSystem.length})
-              </button>
+              </TabsTrigger>
               {user.role === "admin" && (
-                <button
-                  onClick={() => setActiveTab("users")}
-                  className={`${
-                    activeTab === "users"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-zinc-600 hover:text-zinc-900 hover:border-zinc-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                >
+                <TabsTrigger value="users" className="h-auto rounded-none px-1 py-3 text-sm font-medium">
                   Users ({users.length})
-                </button>
+                </TabsTrigger>
               )}
-            </nav>
-          </div>
+            </TabsList>
 
-          {/* Search Bar */}
-          <div className="mb-6 flex justify-between items-center">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-            />
-            <button 
-              onClick={handleAddNew}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-            >
-              + Add New
-            </button>
-          </div>
-
-          {/* Data Table */}
-          {dataLoading ? (
-            <div className="text-center py-12">
-              <p className="text-zinc-600">Loading data...</p>
+            {/* Search Bar */}
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <Input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-11 w-64"
+              />
+              <Button onClick={handleAddNew} className="h-11">
+                + Add New
+              </Button>
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              {activeTab === "symptoms" && (
-                <table className="min-w-full divide-y divide-zinc-200">
-                  <thead className="bg-zinc-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        No
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Code
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Indonesian Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        English Name
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-zinc-200">
-                    {filteredSymptoms.map((symptom) => (
-                      <tr key={symptom.no}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">
-                          {symptom.no}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-zinc-900">
-                          {symptom.kodeGejala}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-900">
-                          {symptom.namaGejala}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-600">
-                          {symptom.symptomsName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button 
-                            onClick={() => handleEdit(symptom)}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(symptom.no)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
 
-              {activeTab === "illnesses" && (
-                <table className="min-w-full divide-y divide-zinc-200">
-                  <thead className="bg-zinc-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        No
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Code
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-zinc-200">
-                    {filteredIllnesses.map((illness) => (
-                      <tr key={illness.no}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">
-                          {illness.no}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-zinc-900">
-                          {illness.kodePenyakit}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-900">
-                          {illness.namaPenyakit}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button 
-                            onClick={() => handleEdit(illness)}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(illness.no)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-
-              {activeTab === "expert-system" && (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-zinc-200">
-                    <thead className="bg-zinc-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          No
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          Symptom Code
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          P1
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          P2
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          P3
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          P4
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          P5
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          P6
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-zinc-200">
-                      {filteredExpertSystem.map((entry) => (
-                        <tr key={entry.no}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">
-                            {entry.no}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-zinc-900">
-                            {entry.kodeGejala}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-900">
-                            {entry.cf.P1 !== null ? entry.cf.P1 : "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-900">
-                            {entry.cf.P2 !== null ? entry.cf.P2 : "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-900">
-                            {entry.cf.P3 !== null ? entry.cf.P3 : "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-900">
-                            {entry.cf.P4 !== null ? entry.cf.P4 : "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-900">
-                            {entry.cf.P5 !== null ? entry.cf.P5 : "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-900">
-                            {entry.cf.P6 !== null ? entry.cf.P6 : "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button 
-                              onClick={() => handleEdit(entry)}
-                              className="text-blue-600 hover:text-blue-900 mr-4"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(entry.no)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
+            {/* Data Table */}
+            {dataLoading ? (
+              <div className="py-12 text-center">
+                <p className="text-muted-foreground">Loading data...</p>
+              </div>
+            ) : (
+              <Card className="overflow-hidden py-0">
+                <TabsContent value="symptoms">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>No</TableHead>
+                        <TableHead>Code</TableHead>
+                        <TableHead>Indonesian Name</TableHead>
+                        <TableHead>English Name</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredSymptoms.map((symptom) => (
+                        <TableRow key={symptom.no}>
+                          <TableCell>{symptom.no}</TableCell>
+                          <TableCell className="font-medium">{symptom.kodeGejala}</TableCell>
+                          <TableCell className="whitespace-normal">{symptom.namaGejala}</TableCell>
+                          <TableCell className="whitespace-normal text-muted-foreground">
+                            {symptom.symptomsName}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Edit"
+                                onClick={() => handleEdit(symptom)}
+                              >
+                                <Pencil />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Delete"
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => handleDelete(symptom.no)}
+                              >
+                                <Trash2 />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
 
-              {activeTab === "users" && (
-                <table className="min-w-full divide-y divide-zinc-200">
-                  <thead className="bg-zinc-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Username
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Full Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Age
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Gender
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-zinc-200">
-                    {filteredUsers.map((u) => (
-                      <tr key={u.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-zinc-900">
-                          {u.username}
-                          {u.id === user.id && (
-                            <span className="ml-2 text-xs font-normal text-zinc-500">(you)</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-900">{u.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-600">
-                          {u.age ?? "—"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-600">
-                          {u.gender ?? "—"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${roleBadgeClass[u.role]}`}
-                          >
-                            {roleLabel[u.role]}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {u.id === user.id ? (
-                            <span className="text-zinc-400">—</span>
-                          ) : (
-                            <button
-                              onClick={() => handleEdit(u)}
-                              className="text-blue-600 hover:text-blue-900"
+                <TabsContent value="illnesses">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>No</TableHead>
+                        <TableHead>Code</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredIllnesses.map((illness) => (
+                        <TableRow key={illness.no}>
+                          <TableCell>{illness.no}</TableCell>
+                          <TableCell className="font-medium">{illness.kodePenyakit}</TableCell>
+                          <TableCell className="whitespace-normal">{illness.namaPenyakit}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Edit"
+                                onClick={() => handleEdit(illness)}
+                              >
+                                <Pencil />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Delete"
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => handleDelete(illness.no)}
+                              >
+                                <Trash2 />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+
+                <TabsContent value="expert-system">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>No</TableHead>
+                        <TableHead>Symptom Code</TableHead>
+                        <TableHead className="text-center">P1</TableHead>
+                        <TableHead className="text-center">P2</TableHead>
+                        <TableHead className="text-center">P3</TableHead>
+                        <TableHead className="text-center">P4</TableHead>
+                        <TableHead className="text-center">P5</TableHead>
+                        <TableHead className="text-center">P6</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredExpertSystem.map((entry) => (
+                        <TableRow key={entry.no}>
+                          <TableCell>{entry.no}</TableCell>
+                          <TableCell className="font-medium">{entry.kodeGejala}</TableCell>
+                          <TableCell className="text-center">
+                            {entry.cf.P1 !== null ? entry.cf.P1 : "-"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {entry.cf.P2 !== null ? entry.cf.P2 : "-"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {entry.cf.P3 !== null ? entry.cf.P3 : "-"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {entry.cf.P4 !== null ? entry.cf.P4 : "-"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {entry.cf.P5 !== null ? entry.cf.P5 : "-"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {entry.cf.P6 !== null ? entry.cf.P6 : "-"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Edit"
+                                onClick={() => handleEdit(entry)}
+                              >
+                                <Pencil />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Delete"
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => handleDelete(entry.no)}
+                              >
+                                <Trash2 />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+
+                <TabsContent value="users">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Full Name</TableHead>
+                        <TableHead>Age</TableHead>
+                        <TableHead>Gender</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((u) => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-medium">
+                            {u.username}
+                            {u.id === user.id && (
+                              <span className="ml-2 text-xs font-normal text-muted-foreground">(you)</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="whitespace-normal">{u.name}</TableCell>
+                          <TableCell className="text-muted-foreground">{u.age ?? "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">{u.gender ?? "—"}</TableCell>
+                          <TableCell>
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-semibold ${roleBadgeClass[u.role]}`}
                             >
-                              Edit
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
+                              {roleLabel[u.role]}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {u.id === user.id ? (
+                              <span className="text-muted-foreground/60">—</span>
+                            ) : (
+                              <div className="flex justify-end">
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label="Edit"
+                                  onClick={() => handleEdit(u)}
+                                >
+                                  <Pencil />
+                                </Button>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+              </Card>
+            )}
+          </Tabs>
 
           {/* Empty State */}
           {!dataLoading && activeTab === "symptoms" && filteredSymptoms.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-zinc-600">No symptoms found</p>
+            <div className="rounded-lg bg-card py-12 text-center">
+              <p className="text-muted-foreground">No symptoms found</p>
             </div>
           )}
           {!dataLoading && activeTab === "illnesses" && filteredIllnesses.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-zinc-600">No illnesses found</p>
+            <div className="rounded-lg bg-card py-12 text-center">
+              <p className="text-muted-foreground">No illnesses found</p>
             </div>
           )}
           {!dataLoading && activeTab === "expert-system" && filteredExpertSystem.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-zinc-600">No expert system entries found</p>
+            <div className="rounded-lg bg-card py-12 text-center">
+              <p className="text-muted-foreground">No expert system entries found</p>
             </div>
           )}
           {!dataLoading && activeTab === "users" && filteredUsers.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-zinc-600">No users found</p>
+            <div className="rounded-lg bg-card py-12 text-center">
+              <p className="text-muted-foreground">No users found</p>
             </div>
           )}
         </div>
@@ -593,14 +551,14 @@ export default function AdminPage() {
         onSave={handleModalSave}
         symptom={editingSymptom}
       />
-      
+
       <IllnessModal
         isOpen={illnessModalOpen}
         onClose={() => setIllnessModalOpen(false)}
         onSave={handleModalSave}
         illness={editingIllness}
       />
-      
+
       <ExpertSystemModal
         isOpen={expertSystemModalOpen}
         onClose={() => setExpertSystemModalOpen(false)}
@@ -617,6 +575,27 @@ export default function AdminPage() {
         user={editingUser}
         currentUserId={user.id}
       />
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the entry.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleting}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
