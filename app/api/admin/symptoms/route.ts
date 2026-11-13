@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/app/lib/auth";
+import { requireRole } from "@/app/lib/requireRole";
 import { getSymptoms, createSymptom } from "@/app/lib/db";
 import { isValidSymptomCode } from "@/app/lib/symptomUtils";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '') || 
-                  req.cookies.get("next-auth.session-token")?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const payload = await verifyToken(token);
-    if (!payload || payload.role !== 'admin') {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const { error } = await requireRole(req, ['admin']);
+    if (error) return error;
 
     const symptoms = await getSymptoms();
     return NextResponse.json({ symptoms });
@@ -30,18 +20,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '') || 
-                  req.cookies.get("next-auth.session-token")?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const payload = await verifyToken(token);
-    if (!payload || payload.role !== 'admin') {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const { error } = await requireRole(req, ['admin']);
+    if (error) return error;
 
     const body = await req.json();
     const { kodeGejala, namaGejala, symptomsName } = body;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/app/lib/auth";
+import { requireRole } from "@/app/lib/requireRole";
 import { hashPassword } from "@/app/lib/auth";
 import { getUserById, updateUser } from "@/app/lib/db";
 import { validateUserUpdate, isValidRole } from "@/app/lib/userValidation";
@@ -9,18 +9,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '') ||
-                  req.cookies.get("next-auth.session-token")?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const payload = await verifyToken(token);
-    if (!payload || payload.role !== 'admin') {
-      return NextResponse.json({ error: "Unauthorized - Admin only" }, { status: 403 });
-    }
+    const { payload, error } = await requireRole(req, ['admin']);
+    if (error) return error;
 
     const { id } = await params;
     const body = await req.json();

@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/app/lib/auth";
+import { requireRole } from "@/app/lib/requireRole";
 import { getExpertSystem, createExpertSystemEntry } from "@/app/lib/db";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '') || 
-                  req.cookies.get("next-auth.session-token")?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const payload = await verifyToken(token);
-    if (!payload || (payload.role !== 'admin' && payload.role !== 'expert')) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const { error } = await requireRole(req, ['admin', 'expert']);
+    if (error) return error;
 
     const expertSystem = await getExpertSystem();
     return NextResponse.json({ expertSystem });
@@ -29,18 +19,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '') || 
-                  req.cookies.get("next-auth.session-token")?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const payload = await verifyToken(token);
-    if (!payload || (payload.role !== 'admin' && payload.role !== 'expert')) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const { error } = await requireRole(req, ['admin', 'expert']);
+    if (error) return error;
 
     const body = await req.json();
     const { kodeGejala, cf } = body;
