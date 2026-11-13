@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
@@ -380,12 +380,17 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
   const [responses, setResponses] = useState<SymptomResponse[]>([]);
   const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[]>([]);
   const [loading, setLoading] = useState(true);
+  // T20: cegah hasil yang sama tersimpan berkali-kali kalau halaman ini di-refresh,
+  // atau kalau efek ini sempat dijalankan dua kali (React Strict Mode saat dev)
+  const saveTriggeredRef = useRef(false);
 
   useEffect(() => {
     if (!patientName || !patientAge || !patientGender || !encodedResponses) {
       router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
       return;
     }
+
+    const storageKey = `eyedx:savedResult:${encodedResponses}:${patientName}:${patientAge}:${patientGender}:${questionsAsked}`;
 
     (async () => {
       try {
@@ -405,6 +410,15 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
         setDiagnosisResults(diagnoseData.results);
         setLoading(false);
 
+        const existingUuid = sessionStorage.getItem(storageKey);
+        if (existingUuid) {
+          setSavedUuid(existingUuid);
+          return;
+        }
+
+        if (saveTriggeredRef.current) return;
+        saveTriggeredRef.current = true;
+
         const saveRes = await fetch("/api/results", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -419,6 +433,7 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
 
         if (saveRes.ok) {
           const saveData = await saveRes.json();
+          sessionStorage.setItem(storageKey, saveData.id as string);
           setSavedUuid(saveData.id as string);
         }
       } catch (error) {
