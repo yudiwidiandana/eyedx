@@ -91,6 +91,14 @@ export default function IllnessModal({ isOpen, onClose, onSave, illness }: Illne
           </Alert>
         )}
 
+        {!illness && (
+          <Alert>
+            <AlertDescription>
+              Mesin CF hanya menghitung penyakit P1-P6, jadi kode lain akan ditolak.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -102,6 +110,7 @@ export default function IllnessModal({ isOpen, onClose, onSave, illness }: Illne
                 onChange={(e) => setFormData({ ...formData, kodePenyakit: e.target.value })}
                 placeholder="e.g., P1"
                 required
+                disabled={!!illness}
                 className="h-11"
               />
             </div>

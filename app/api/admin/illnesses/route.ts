@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/app/lib/auth";
 import { getIllnesses, createIllness } from "@/app/lib/db";
+import { CORE_ILLNESS_CODES } from "@/app/lib/illnessCodes";
 
 export async function GET(req: NextRequest) {
   try {
@@ -49,7 +50,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const no = await createIllness({ kodePenyakit, namaPenyakit });
+    const kode = String(kodePenyakit).trim();
+
+    // mesin CF hanya menghitung P1-P6, penyakit lain tersimpan tapi tidak pernah dihitung
+    if (!CORE_ILLNESS_CODES.includes(kode)) {
+      return NextResponse.json(
+        { error: "Penyakit baru tidak dapat ditambahkan: mesin CF hanya menghitung P1-P6" },
+        { status: 400 }
+      );
+    }
+
+    if ((await getIllnesses()).some(i => i.kodePenyakit === kode)) {
+      return NextResponse.json({ error: `Kode ${kode} sudah ada` }, { status: 400 });
+    }
+
+    const no = await createIllness({ kodePenyakit: kode, namaPenyakit });
     return NextResponse.json({ success: true, no });
   } catch (error) {
     return NextResponse.json(
