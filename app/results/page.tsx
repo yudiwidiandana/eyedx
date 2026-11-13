@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
+import { useAuth } from "../lib/useAuth";
 import type { DiagnosisResult, SymptomResponse } from "../lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -369,10 +370,8 @@ function CopyButton({
 function FreshResultsContent({ locale }: { locale: Locale }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
 
-  const patientName = searchParams.get("name") || "";
-  const patientAge = searchParams.get("age") || "";
-  const patientGender = searchParams.get("gender") || "";
   const encodedResponses = searchParams.get("responses") || "";
   const questionsAsked = parseInt(searchParams.get("questionsAsked") || "0");
 
@@ -384,13 +383,17 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
   // atau kalau efek ini sempat dijalankan dua kali (React Strict Mode saat dev)
   const saveTriggeredRef = useRef(false);
 
+  const profileIncomplete = !authLoading && (!user || !user.age || !user.gender);
+
   useEffect(() => {
-    if (!patientName || !patientAge || !patientGender || !encodedResponses) {
+    if (authLoading) return;
+
+    if (profileIncomplete || !encodedResponses) {
       router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
       return;
     }
 
-    const storageKey = `eyedx:savedResult:${encodedResponses}:${patientName}:${patientAge}:${patientGender}:${questionsAsked}`;
+    const storageKey = `eyedx:savedResult:${encodedResponses}:${user!.id}:${questionsAsked}`;
 
     (async () => {
       try {
@@ -423,9 +426,6 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: patientName,
-            age: parseInt(patientAge),
-            gender: patientGender,
             responses: encodedResponses,
             questionsAsked,
           }),
@@ -441,9 +441,9 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
         router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
       }
     })();
-  }, [patientName, patientAge, patientGender, encodedResponses, questionsAsked, locale, router]);
+  }, [authLoading, profileIncomplete, user, encodedResponses, questionsAsked, locale, router]);
 
-  if (loading || responses.length === 0) {
+  if (authLoading || loading || responses.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
@@ -457,9 +457,9 @@ function FreshResultsContent({ locale }: { locale: Locale }) {
   return (
     <ResultsView
       locale={locale}
-      patientName={patientName}
-      patientAge={patientAge}
-      patientGender={patientGender}
+      patientName={user!.name}
+      patientAge={String(user!.age)}
+      patientGender={user!.gender ?? ""}
       responses={responses}
       questionsAsked={questionsAsked}
       diagnosisResults={diagnosisResults}

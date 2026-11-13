@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveDiagnosisResult } from "../../lib/db";
+import { saveDiagnosisResult, getUserById } from "../../lib/db";
 import { verifyToken } from "../../lib/auth";
 import { calculateDiagnosis, decodeResponses } from "../../lib/expertSystem";
 
@@ -7,9 +7,6 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   let body: {
-    name?: unknown;
-    age?: unknown;
-    gender?: unknown;
     responses?: unknown;
     questionsAsked?: unknown;
   };
@@ -20,26 +17,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const name = typeof body.name === "string" ? body.name.trim() : "";
-  const age = typeof body.age === "number" ? body.age : NaN;
-  const gender = typeof body.gender === "string" ? body.gender.trim() : "";
   const responses = typeof body.responses === "string" ? body.responses : "";
   const questionsAsked =
     typeof body.questionsAsked === "number" ? body.questionsAsked : 0;
 
-  if (!name || !Number.isFinite(age) || age <= 0 || age > 150 || !gender) {
-    return NextResponse.json({ error: "Missing or invalid patient data" }, { status: 400 });
+  // nama/umur/gender selalu diambil dari akun yang login, bukan dari body klien (T25)
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '') ||
+                request.cookies.get("next-auth.session-token")?.value;
+
+  if (!token) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  let userId: string | undefined;
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '') || 
-                request.cookies.get("next-auth.session-token")?.value;
-  if (token) {
-    const payload = await verifyToken(token);
-    if (payload) {
-      userId = payload.sub;
-    }
+  const payload = await verifyToken(token);
+  if (!payload) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  }
+
+  const userId = payload.sub;
+  const account = await getUserById(userId);
+  if (!account) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const { name, age, gender } = account;
+  if (!name || !age || age <= 0 || age > 150 || !gender) {
+    return NextResponse.json({ error: "Missing or invalid patient data" }, { status: 400 });
   }
 
   try {

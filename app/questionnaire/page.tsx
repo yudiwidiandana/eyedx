@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import { translations, type Locale } from "../lib/translations";
+import { useAuth } from "../lib/useAuth";
 import { encodeResponses } from "../lib/symptomUtils";
 import { severityCFMap, type SeverityLevel, type SymptomResponse, type Symptom } from "../lib/types";
 import { Button } from "@/components/ui/button";
@@ -16,11 +17,9 @@ export const dynamic = 'force-dynamic';
 function QuestionnaireContent({ locale }: { locale: Locale }) {
   const t = translations[locale].questionnairePage;
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
 
-  const patientName = searchParams.get("name") || "";
-  const patientAge = searchParams.get("age") || "";
-  const patientGender = searchParams.get("gender") || "";
+  const profileIncomplete = !authLoading && (!user || !user.age || !user.gender);
 
   const [allSymptoms, setAllSymptoms] = useState<Symptom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,10 +53,10 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   }, []);
 
   useEffect(() => {
-    if (!patientName || !patientAge || !patientGender) {
+    if (profileIncomplete) {
       router.push(`/${locale === "en" ? "" : locale + "/"}diagnosis`);
     }
-  }, [patientName, patientAge, patientGender, locale, router]);
+  }, [profileIncomplete, locale, router]);
 
   const handleSeverityChange = (severity: SeverityLevel) => {
 
@@ -87,16 +86,13 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   const handleFinish = () => {
     const encodedResponses = encodeResponses(responses);
     const params = new URLSearchParams({
-      name: patientName,
-      age: patientAge,
-      gender: patientGender,
       responses: encodedResponses,
       questionsAsked: responses.filter(r => r.userCF > 0).length.toString(),
     });
     router.push(`/${locale === "en" ? "" : locale + "/"}results?${params.toString()}`);
   };
 
-  if (!patientName || loading || allSymptoms.length === 0) {
+  if (authLoading || profileIncomplete || loading || allSymptoms.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />

@@ -25,12 +25,7 @@ export function DiagnosisPageContent({ locale }: { locale: Locale }) {
   const handleNext = () => {
     if (!user || !user.age || !user.gender) return;
 
-    const params = new URLSearchParams({
-      name: user.name,
-      age: String(user.age),
-      gender: user.gender,
-    });
-    router.push(`/${locale === "en" ? "" : locale + "/"}questionnaire?${params.toString()}`);
+    router.push(`/${locale === "en" ? "" : locale + "/"}questionnaire`);
   };
 
   if (loading) {
