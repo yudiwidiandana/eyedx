@@ -1,5 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSymptomCode, encodeResponses } from "./symptomUtils";
+import { normalizeSymptomCode, encodeResponses, isValidSymptomCode } from "./symptomUtils";
+
+describe("isValidSymptomCode", () => {
+  it("menerima format G01 hingga G39 sesuai konvensi tabel symptoms", () => {
+    expect(isValidSymptomCode("G01")).toBe(true);
+    expect(isValidSymptomCode("G39")).toBe(true);
+  });
+
+  it("menolak kode tanpa padding nol, huruf kecil, atau format lain yang akan lolos tak terdeteksi", () => {
+    expect(isValidSymptomCode("G1")).toBe(false);
+    expect(isValidSymptomCode("g01")).toBe(false);
+    expect(isValidSymptomCode("G001")).toBe(false);
+    expect(isValidSymptomCode("P01")).toBe(false);
+    expect(isValidSymptomCode("")).toBe(false);
+  });
+});
 
 describe("normalizeSymptomCode", () => {
   it("mengubah format G01 (symptoms.json) jadi G1 (expertSystem.json)", () => {

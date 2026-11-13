@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/app/lib/auth";
 import { updateSymptom, deleteSymptom } from "@/app/lib/db";
+import { isValidSymptomCode } from "@/app/lib/symptomUtils";
 
 export async function PUT(
   req: NextRequest,
@@ -28,6 +29,14 @@ export async function PUT(
     }
 
     const body = await req.json();
+
+    if (body.kodeGejala && !isValidSymptomCode(body.kodeGejala)) {
+      return NextResponse.json(
+        { error: "Symptom code must match the format G01-G39 (e.g. G07)" },
+        { status: 400 }
+      );
+    }
+
     await updateSymptom(no, body);
     
     return NextResponse.json({ success: true });

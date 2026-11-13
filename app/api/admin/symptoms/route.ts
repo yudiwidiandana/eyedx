@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/app/lib/auth";
 import { getSymptoms, createSymptom } from "@/app/lib/db";
+import { isValidSymptomCode } from "@/app/lib/symptomUtils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -47,6 +48,13 @@ export async function POST(req: NextRequest) {
 
     if (!kodeGejala || !namaGejala || !symptomsName) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    if (!isValidSymptomCode(kodeGejala)) {
+      return NextResponse.json(
+        { error: "Symptom code must match the format G01-G39 (e.g. G07)" },
+        { status: 400 }
+      );
     }
 
     const no = await createSymptom({ kodeGejala, namaGejala, symptomsName });

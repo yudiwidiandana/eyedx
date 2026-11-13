@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { isValidSymptomCode } from "@/app/lib/symptomUtils";
 
 interface SymptomModalProps {
   isOpen: boolean;
@@ -49,8 +50,14 @@ export default function SymptomModal({ isOpen, onClose, onSave, symptom }: Sympt
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    if (!isValidSymptomCode(formData.kodeGejala)) {
+      setError("Symptom code must match the format G01-G39 (e.g. G07)");
+      return;
+    }
+
+    setLoading(true);
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
