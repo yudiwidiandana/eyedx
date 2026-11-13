@@ -26,6 +26,7 @@ export interface Symptom {
   no: number;
   kodeGejala: string;
   namaGejala: string;
+  symptomsName: string;
 }
 
 // Illness data structure from illnesses.json

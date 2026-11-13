@@ -1,5 +1,5 @@
 import { getSymptoms, getIllnesses, getExpertSystem } from './db';
-import type { Symptom, DiagnosisResult, SymptomResponse } from './types';
+import type { DiagnosisResult, SymptomResponse } from './types';
 import { normalizeSymptomCode } from './symptomUtils';
 
 const NEGATIVE_EVIDENCE_WEIGHT = 0.5;
@@ -80,10 +80,6 @@ export async function calculateDiagnosis(responses: SymptomResponse[]): Promise<
   }
 
   return results.sort((a, b) => b.cfValue - a.cfValue);
-}
-
-export async function getAllSymptoms(): Promise<Symptom[]> {
-  return getSymptoms();
 }
 
 export { encodeResponses } from './symptomUtils';

@@ -19,21 +19,3 @@ export function encodeResponses(responses: SymptomResponse[]): string {
     .map(r => `${normalizeSymptomCode(r.symptomCode)}:${r.userCF}`)
     .join(',');
 }
-
-export async function decodeResponses(encoded: string, getSymptomName: (code: string) => Promise<string>): Promise<SymptomResponse[]> {
-  if (!encoded) return [];
-
-  const pairs = encoded.split(',');
-  const results: SymptomResponse[] = [];
-  
-  for (const pair of pairs) {
-    const [code, cf] = pair.split(':');
-    results.push({
-      symptomCode: code,
-      symptomName: await getSymptomName(code),
-      userCF: parseFloat(cf),
-    });
-  }
-  
-  return results;
-}

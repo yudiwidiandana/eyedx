@@ -1,4 +1,5 @@
 import mariadb, { type ConnectionConfig, type PoolConnection } from "mariadb";
+import type { Symptom } from "./types";
 
 const pool = mariadb.createPool({
   host: process.env.DB_HOST || "localhost",
@@ -40,13 +41,6 @@ export interface User {
   // null untuk akun bawaan seed yang dibuat sebelum kolom ini ada
   age: number | null;
   gender: string | null;
-}
-
-export interface Symptom {
-  no: number;
-  kodeGejala: string;
-  namaGejala: string;
-  symptomsName: string;
 }
 
 export interface Illness {
