@@ -546,31 +546,19 @@ export async function updateExpertSystemEntry(no: number, data: Partial<Omit<Exp
   try {
     conn = await pool.getConnection();
     await ensureTables(conn);
-    
-    const updates: string[] = [];
-    const values: (string | number | null)[] = [];
-
-    if (data.kodeGejala !== undefined) {
-      updates.push('kode_gejala = ?');
-      values.push(data.kodeGejala);
-    }
-    
-    if (data.cf) {
-      if (data.cf.P1 !== undefined) { updates.push('cf_p1 = ?'); values.push(data.cf.P1); }
-      if (data.cf.P2 !== undefined) { updates.push('cf_p2 = ?'); values.push(data.cf.P2); }
-      if (data.cf.P3 !== undefined) { updates.push('cf_p3 = ?'); values.push(data.cf.P3); }
-      if (data.cf.P4 !== undefined) { updates.push('cf_p4 = ?'); values.push(data.cf.P4); }
-      if (data.cf.P5 !== undefined) { updates.push('cf_p5 = ?'); values.push(data.cf.P5); }
-      if (data.cf.P6 !== undefined) { updates.push('cf_p6 = ?'); values.push(data.cf.P6); }
-    }
-    
-    if (updates.length > 0) {
-      values.push(no);
-      await conn.query(
-        `UPDATE expert_system SET ${updates.join(', ')} WHERE no = ?`,
-        values
-      );
-    }
+    // COALESCE, konsisten dengan updateSymptom/updateIllness: field yang tidak dikirim tidak ikut ditimpa (T26)
+    await conn.query(
+      `UPDATE expert_system
+       SET kode_gejala = COALESCE(?, kode_gejala),
+           cf_p1 = COALESCE(?, cf_p1),
+           cf_p2 = COALESCE(?, cf_p2),
+           cf_p3 = COALESCE(?, cf_p3),
+           cf_p4 = COALESCE(?, cf_p4),
+           cf_p5 = COALESCE(?, cf_p5),
+           cf_p6 = COALESCE(?, cf_p6)
+       WHERE no = ?`,
+      [data.kodeGejala, data.cf?.P1, data.cf?.P2, data.cf?.P3, data.cf?.P4, data.cf?.P5, data.cf?.P6, no]
+    );
   } finally {
     if (conn) conn.release();
   }
