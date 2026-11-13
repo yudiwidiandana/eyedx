@@ -107,9 +107,7 @@ export default function UserModal({ isOpen, onClose, onSave, user, currentUserId
     }
 
     setLoading(true);
-    const token = localStorage.getItem('auth_token');
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
 
     try {
       const res = isEdit

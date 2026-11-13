@@ -49,14 +49,9 @@ export default function IllnessModal({ isOpen, onClose, onSave, illness }: Illne
     setLoading(true);
     setError("");
 
-    const token = localStorage.getItem('auth_token');
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const url = illness

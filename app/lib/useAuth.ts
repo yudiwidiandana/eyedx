@@ -14,17 +14,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    fetch("/api/auth/me", { headers })
+    fetch("/api/auth/me")
       .then(async (res) => {
         if (res.ok) return res.json();
         // 404 = token sah tapi usernya sudah dihapus; buang sesi basi lalu muat ulang
@@ -34,7 +24,6 @@ export function useAuth() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: "logout" }),
           });
-          localStorage.removeItem('auth_token');
           // hanya muat ulang bila cookie benar-benar terhapus, supaya tidak berulang tanpa henti
           if (loggedOut.ok) window.location.reload();
         }
@@ -51,22 +40,12 @@ export function useAuth() {
   }, []);
 
   const logout = async () => {
-    const token = localStorage.getItem('auth_token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     await fetch("/api/auth", {
       method: "POST",
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: "logout" }),
     });
-    
-    localStorage.removeItem('auth_token');
+
     setUser(null);
     window.location.href = "/";
   };

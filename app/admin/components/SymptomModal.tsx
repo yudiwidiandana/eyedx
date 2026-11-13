@@ -52,14 +52,9 @@ export default function SymptomModal({ isOpen, onClose, onSave, symptom }: Sympt
     setLoading(true);
     setError("");
 
-    const token = localStorage.getItem('auth_token');
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       const url = symptom

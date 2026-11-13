@@ -112,30 +112,22 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
 
   const loadData = async () => {
     setDataLoading(true);
-    const token = localStorage.getItem('auth_token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
       if (activeTab === "symptoms") {
-        const res = await fetch("/api/admin/symptoms", { headers });
+        const res = await fetch("/api/admin/symptoms");
         const data = await res.json();
         setSymptoms(data.symptoms || []);
       } else if (activeTab === "illnesses") {
-        const res = await fetch("/api/admin/illnesses", { headers });
+        const res = await fetch("/api/admin/illnesses");
         const data = await res.json();
         setIllnesses(data.illnesses || []);
       } else if (activeTab === "expert-system") {
-        const res = await fetch("/api/admin/expert-system", { headers });
+        const res = await fetch("/api/admin/expert-system");
         const data = await res.json();
         setExpertSystem(data.expertSystem || []);
       } else if (activeTab === "users") {
-        const res = await fetch("/api/admin/users", { headers });
+        const res = await fetch("/api/admin/users");
         const data = await res.json();
         setUsers(data.users || []);
       }
@@ -190,15 +182,6 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
     const no = deleteTarget;
     setDeleting(true);
 
-    const token = localStorage.getItem('auth_token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     try {
       let endpoint = "";
       if (activeTab === "symptoms") {
@@ -211,7 +194,6 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
 
       const res = await fetch(endpoint, {
         method: "DELETE",
-        headers,
       });
 
       if (res.ok) {

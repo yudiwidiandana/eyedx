@@ -93,10 +93,6 @@ function RegisterForm({ locale }: { locale: Locale }) {
         return;
       }
 
-      if (data.token) {
-        localStorage.setItem('auth_token', data.token);
-      }
-
       router.push(nextPath || `/${locale === "en" ? "" : locale}`);
       router.refresh();
     } catch {
