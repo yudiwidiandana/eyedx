@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/app/lib/auth";
 import { updateIllness, deleteIllness, getIllnesses } from "@/app/lib/db";
-
-// P1-P6 hardcoded di seluruh mesin CF (expertSystem.ts), jadi tidak boleh dihapus (T22)
-const CORE_ILLNESS_CODES = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
+import { CORE_ILLNESS_CODES } from "@/app/lib/illnessCodes";
 
 export async function PUT(
   req: NextRequest,
@@ -31,6 +29,16 @@ export async function PUT(
     }
 
     const body = await req.json();
+
+    // kode penyakit terikat ke kolom cf_pN di mesin CF, jadi tidak boleh diubah
+    const target = (await getIllnesses()).find(i => i.no === no);
+    if (target && body.kodePenyakit !== undefined && body.kodePenyakit.trim() !== target.kodePenyakit) {
+      return NextResponse.json(
+        { error: "Kode penyakit tidak dapat diubah karena terikat ke mesin CF, hanya nama yang bisa diedit" },
+        { status: 400 }
+      );
+    }
+
     await updateIllness(no, body);
     
     return NextResponse.json({ success: true });
