@@ -30,14 +30,14 @@ export function AboutPageContent({ locale }: { locale: Locale }) {
               <button
                 type="button"
                 onClick={() => setShowPrivacy(true)}
-                className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700"
+                className="inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
                 {t.privacyButtonLabel}
               </button>
               <button
                 type="button"
                 onClick={() => setShowTerms(true)}
-                className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700"
+                className="inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
                 {t.termsButtonLabel}
               </button>
@@ -54,7 +54,7 @@ export function AboutPageContent({ locale }: { locale: Locale }) {
             <button
               type="button"
               onClick={() => setShowPrivacy(false)}
-              className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700"
+              className="inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
             >
               {t.closeButtonLabel}
             </button>
@@ -70,7 +70,7 @@ export function AboutPageContent({ locale }: { locale: Locale }) {
             <button
               type="button"
               onClick={() => setShowTerms(false)}
-              className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700"
+              className="inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
             >
               {t.closeButtonLabel}
             </button>

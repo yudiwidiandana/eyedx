@@ -99,7 +99,7 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
               <p className="text-gray-600 mb-4">{t.historyEmpty}</p>
               <Link
                 href={path("diagnosis")}
-                className="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
               >
                 {t.startDiagnosis}
               </Link>
@@ -150,7 +150,7 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
                           href={`${path("results")}/${item.id}`}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-primary hover:text-primary/80"
                         >
                           {t.viewResult}
                         </Link>
