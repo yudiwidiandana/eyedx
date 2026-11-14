@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSymptomCode, encodeResponses, isValidSymptomCode } from "./symptomUtils";
+import { normalizeSymptomCode, encodeResponses, isValidSymptomCode, isSymptomReferenced } from "./symptomUtils";
 
 describe("isValidSymptomCode", () => {
   it("menerima format G01 hingga G39 sesuai konvensi tabel symptoms", () => {
@@ -48,5 +48,23 @@ describe("encodeResponses", () => {
     ]);
 
     expect(encoded).toBe("");
+  });
+});
+
+describe("isSymptomReferenced", () => {
+  const entries = [{ kodeGejala: "G1" }, { kodeGejala: "G10" }];
+
+  it("mengenali G01 sebagai G1 di expert_system", () => {
+    expect(isSymptomReferenced("G01", entries)).toBe(true);
+  });
+
+  it("G10 tidak bentrok dengan G1 maupun sebaliknya", () => {
+    expect(isSymptomReferenced("G10", [{ kodeGejala: "G1" }])).toBe(false);
+    expect(isSymptomReferenced("G01", [{ kodeGejala: "G10" }])).toBe(false);
+  });
+
+  it("false bila gejala tidak punya baris CF", () => {
+    expect(isSymptomReferenced("G05", entries)).toBe(false);
+    expect(isSymptomReferenced("G05", [])).toBe(false);
   });
 });
