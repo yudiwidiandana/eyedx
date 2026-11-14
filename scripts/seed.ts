@@ -6,6 +6,19 @@ import bcrypt from "bcryptjs";
 import symptomsJson from "../app/table/symptoms.json";
 import illnessesJson from "../app/table/illnesses.json";
 import expertSystemJson from "../app/table/expertSystem.json";
+import { MIN_PASSWORD_LENGTH } from "../app/lib/userValidation";
+
+const DEFAULT_ADMIN_PASSWORD = "password123";
+
+// kata sandi seed dari environment; kosong berarti tidak diset
+function readSeedPassword(name: string): string | null {
+  const value = process.env[name];
+  if (!value) return null;
+  if (value.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`${name} minimal ${MIN_PASSWORD_LENGTH} karakter`);
+  }
+  return value;
+}
 
 async function seed() {
   let conn = null;
@@ -102,14 +115,18 @@ async function seed() {
     );
 
     if (Array.isArray(existingAdmin) && existingAdmin.length === 0) {
-      const passwordHash = await bcrypt.hash("password123", 10);
+      const adminPassword = readSeedPassword("SEED_ADMIN_PASSWORD");
+      const passwordHash = await bcrypt.hash(adminPassword ?? DEFAULT_ADMIN_PASSWORD, 10);
       const adminId = crypto.randomUUID();
       await conn.query(
         `INSERT INTO users (id, username, name, password_hash, role)
          VALUES (?, ?, ?, ?, ?)`,
         [adminId, "admin", "Administrator", passwordHash, "admin"]
       );
-      console.log("Default admin user created (username: admin, password: password123)");
+      console.log("Default admin user created (username: admin)");
+      if (!adminPassword) {
+        console.warn("PERINGATAN: kata sandi admin memakai nilai bawaan; isi SEED_ADMIN_PASSWORD untuk lingkungan selain lokal");
+      }
     } else {
       console.log("Admin user already exists, skipping");
     }
@@ -119,15 +136,21 @@ async function seed() {
       ["expert"]
     );
 
+    const expertPassword = readSeedPassword("SEED_EXPERT_PASSWORD");
+
     if (Array.isArray(existingExpert) && existingExpert.length === 0) {
-      const expertPasswordHash = await bcrypt.hash("password123", 10);
-      const expertId = crypto.randomUUID();
-      await conn.query(
-        `INSERT INTO users (id, username, name, password_hash, role)
-         VALUES (?, ?, ?, ?, ?)`,
-        [expertId, "expert", "Expert User", expertPasswordHash, "expert"]
-      );
-      console.log("Default expert user created (username: expert, password: password123)");
+      if (expertPassword) {
+        const expertPasswordHash = await bcrypt.hash(expertPassword, 10);
+        const expertId = crypto.randomUUID();
+        await conn.query(
+          `INSERT INTO users (id, username, name, password_hash, role)
+           VALUES (?, ?, ?, ?, ?)`,
+          [expertId, "expert", "Expert User", expertPasswordHash, "expert"]
+        );
+        console.log("Default expert user created (username: expert)");
+      } else {
+        console.log("Expert user skipped: isi SEED_EXPERT_PASSWORD atau buat akun pakar lewat tab Users di panel admin");
+      }
     } else {
       console.log("Expert user already exists, skipping");
     }
