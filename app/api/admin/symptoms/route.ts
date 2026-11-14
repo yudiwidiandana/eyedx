@@ -5,7 +5,8 @@ import { isValidSymptomCode } from "@/app/lib/symptomUtils";
 
 export async function GET(req: NextRequest) {
   try {
-    const { error } = await requireRole(req, ['admin']);
+    // GET boleh dibaca pakar agar form Expert System punya daftar gejala dan penyakit
+    const { error } = await requireRole(req, ['admin', 'expert']);
     if (error) return error;
 
     const symptoms = await getSymptoms();

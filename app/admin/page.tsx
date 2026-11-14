@@ -136,6 +136,19 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
     }
   }, [user, loadData]);
 
+  // daftar gejala dan penyakit dimuat sekali untuk form Expert System, apa pun tab aktifnya
+  useEffect(() => {
+    if (!user || (user.role !== "admin" && user.role !== "expert")) return;
+    fetch(TAB_ENDPOINTS.symptoms)
+      .then((res) => res.json())
+      .then((data) => setSymptoms(data.symptoms || []))
+      .catch((error) => console.error("Failed to load symptoms:", error));
+    fetch(TAB_ENDPOINTS.illnesses)
+      .then((res) => res.json())
+      .then((data) => setIllnesses(data.illnesses || []))
+      .catch((error) => console.error("Failed to load illnesses:", error));
+  }, [user]);
+
   const handleAddNew = () => {
     if (activeTab === "symptoms") {
       setEditingSymptom(undefined);

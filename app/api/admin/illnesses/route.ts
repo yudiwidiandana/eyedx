@@ -5,7 +5,8 @@ import { CORE_ILLNESS_CODES } from "@/app/lib/illnessCodes";
 
 export async function GET(req: NextRequest) {
   try {
-    const { error } = await requireRole(req, ['admin']);
+    // GET boleh dibaca pakar agar form Expert System punya daftar gejala dan penyakit
+    const { error } = await requireRole(req, ['admin', 'expert']);
     if (error) return error;
 
     const illnesses = await getIllnesses();
