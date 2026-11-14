@@ -21,6 +21,17 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
   const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const t = translations[locale].profilePage;
+  const genderLabels: Record<string, string> = {
+    "laki-laki": translations[locale].diagnosisPage.genderMale,
+    perempuan: translations[locale].diagnosisPage.genderFemale,
+    lainnya: translations[locale].diagnosisPage.genderOther,
+  };
+  const roleLabels: Record<string, string> = {
+    user: t.roleUser,
+    expert: t.roleExpert,
+    admin: t.roleAdmin,
+  };
 
   const path = (segment: string) =>
     `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`;
@@ -62,33 +73,33 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
       <Header locale={locale} />
       <div className="max-w-6xl mx-auto py-8">
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Profile</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{t.title}</h1>
           <div className="space-y-2">
             <p className="text-gray-700">
-              <span className="font-semibold">Name:</span> {user.name}
+              <span className="font-semibold">{t.nameLabel}:</span> {user.name}
             </p>
             <p className="text-gray-700">
-              <span className="font-semibold">Username:</span> {user.username}
+              <span className="font-semibold">{t.usernameLabel}:</span> {user.username}
             </p>
             <p className="text-gray-700">
-              <span className="font-semibold">Role:</span> {user.role}
+              <span className="font-semibold">{t.roleLabel}:</span> {roleLabels[user.role] ?? user.role}
             </p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Diagnosis History</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.historyTitle}</h2>
 
           {historyLoading ? (
-            <p className="text-gray-600">Loading history...</p>
+            <p className="text-gray-600">{t.historyLoading}</p>
           ) : history.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">No diagnosis history yet</p>
+              <p className="text-gray-600 mb-4">{t.historyEmpty}</p>
               <Link
                 href={path("diagnosis")}
                 className="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
-                Start Diagnosis
+                {t.startDiagnosis}
               </Link>
             </div>
           ) : (
@@ -97,22 +108,22 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
+                      {t.colDate}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Patient Name
+                      {t.colPatient}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Age
+                      {t.colAge}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Gender
+                      {t.colGender}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Questions
+                      {t.colSymptoms}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
+                      {t.colAction}
                     </th>
                   </tr>
                 </thead>
@@ -120,7 +131,7 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
                   {history.map((item) => (
                     <tr key={item.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(item.createdAt).toLocaleDateString()}
+                        {new Date(item.createdAt).toLocaleDateString(locale === "id" ? "id-ID" : "en-US")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.name}
@@ -129,7 +140,7 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
                         {item.age}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.gender}
+                        {genderLabels[item.gender] ?? item.gender}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.questionsAsked}
@@ -139,7 +150,7 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
                           href={`${path("results")}/${item.id}`}
                           className="text-blue-600 hover:text-blue-800"
                         >
-                          View Result
+                          {t.viewResult}
                         </Link>
                       </td>
                     </tr>
