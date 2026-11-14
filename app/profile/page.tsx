@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
-import { type Locale } from "../lib/translations";
+import { translations, type Locale } from "../lib/translations";
 
 interface HistoryItem {
   id: string;
@@ -51,7 +51,7 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
       <div className="flex min-h-screen flex-col bg-gray-50">
         <Header locale={locale} />
         <div className="flex flex-1 items-center justify-center">
-          <p>Loading...</p>
+          <p>{translations[locale].common.loading}</p>
         </div>
       </div>
     );

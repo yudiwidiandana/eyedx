@@ -62,7 +62,7 @@ export default function Header({ locale }: { locale: Locale }) {
                       aria-current={isActive(path("profile")) ? "page" : undefined}
                       className={navLinkClass(path("profile"))}
                     >
-                      Profile
+                      {t.profile}
                     </Link>
                   </li>
                   {(user.role === "admin" || user.role === "expert") && (
@@ -72,7 +72,7 @@ export default function Header({ locale }: { locale: Locale }) {
                         aria-current={isActive(path("admin")) ? "page" : undefined}
                         className={navLinkClass(path("admin"))}
                       >
-                        Admin
+                        {t.admin}
                       </Link>
                     </li>
                   )}
@@ -90,7 +90,7 @@ export default function Header({ locale }: { locale: Locale }) {
                   className="hidden md:inline-flex"
                   onClick={logout}
                 >
-                  Logout
+                  {t.logout}
                 </Button>
               ) : (
                 <Button
@@ -99,7 +99,7 @@ export default function Header({ locale }: { locale: Locale }) {
                   size="sm"
                   className="hidden md:inline-flex"
                 >
-                  Login
+                  {t.login}
                 </Button>
               )}
 
@@ -142,7 +142,7 @@ export default function Header({ locale }: { locale: Locale }) {
                       aria-current={isActive(path("profile")) ? "page" : undefined}
                       className={navLinkClass(path("profile"), "block")}
                     >
-                      Profile
+                      {t.profile}
                     </Link>
                   </li>
                   {(user.role === "admin" || user.role === "expert") && (
@@ -153,7 +153,7 @@ export default function Header({ locale }: { locale: Locale }) {
                         aria-current={isActive(path("admin")) ? "page" : undefined}
                         className={navLinkClass(path("admin"), "block")}
                       >
-                        Admin
+                        {t.admin}
                       </Link>
                     </li>
                   )}
@@ -171,7 +171,7 @@ export default function Header({ locale }: { locale: Locale }) {
                     logout();
                   }}
                 >
-                  Logout
+                  {t.logout}
                 </Button>
               ) : (
                 <Button
@@ -179,7 +179,7 @@ export default function Header({ locale }: { locale: Locale }) {
                   nativeButton={false}
                   className="w-full"
                 >
-                  Login
+                  {t.login}
                 </Button>
               )}
             </div>

@@ -97,7 +97,7 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
       <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-muted-foreground">Loading...</p>
+          <p className="text-lg text-muted-foreground">{translations[locale].common.loading}</p>
         </main>
       </div>
     );
@@ -124,10 +124,10 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
           <div className="mb-8">
             <div className="mb-4 flex items-center justify-between text-sm">
               <p className="text-muted-foreground">
-                Question {currentQuestionIndex + 1} of {totalQuestions}
+                {t.progress.replace("{current}", String(currentQuestionIndex + 1)).replace("{total}", String(totalQuestions))}
               </p>
               <p className="text-muted-foreground">
-                {answeredCount} questions answered
+                {t.answered.replace("{count}", String(answeredCount))}
               </p>
             </div>
 
@@ -194,7 +194,7 @@ export function QuestionnairePageContent({ locale }: { locale: Locale }) {
       <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-muted-foreground">Loading...</p>
+          <p className="text-lg text-muted-foreground">{translations[locale].common.loading}</p>
         </main>
       </div>
     }>
