@@ -1,5 +1,6 @@
 import mariadb, { type ConnectionConfig, type PoolConnection } from "mariadb";
 import type { Symptom } from "./types";
+import { runOnce } from "./runOnce";
 
 const pool = mariadb.createPool({
   host: process.env.DB_HOST || "localhost",
@@ -55,7 +56,8 @@ export interface ExpertSystemEntry {
   cf: Record<string, number | null>;
 }
 
-async function ensureTables(conn: PoolConnection) {
+// dijalankan sekali per proses server, bukan di tiap query (T8)
+const ensureTables = runOnce(async (conn: PoolConnection) => {
   await conn.query(`
     CREATE TABLE IF NOT EXISTS users (
       id              VARCHAR(36)  PRIMARY KEY,
@@ -115,7 +117,7 @@ async function ensureTables(conn: PoolConnection) {
     ALTER TABLE diagnosis_results
       ADD COLUMN IF NOT EXISTS results_snapshot LONGTEXT NULL
   `);
-}
+});
 
 export async function saveDiagnosisResult(data: {
   name: string;
