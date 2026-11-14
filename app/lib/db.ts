@@ -1,6 +1,7 @@
 import mariadb, { type ConnectionConfig, type PoolConnection } from "mariadb";
 import type { Symptom } from "./types";
 import { runOnce } from "./runOnce";
+import { withNumberLock } from "./numberLock";
 
 const pool = mariadb.createPool({
   host: process.env.DB_HOST || "localhost",
@@ -12,7 +13,7 @@ const pool = mariadb.createPool({
   ssl: process.env.DB_SSL === "true"
     ? ({ rejectUnauthorized: false, servername: process.env.DB_HOST } as ConnectionConfig["ssl"])
     : false,
-  connectionLimit: 1,
+  connectionLimit: 5,
   connectTimeout: 60000,
   acquireTimeout: 60000,
   socketTimeout: 60000,
@@ -406,27 +407,40 @@ export async function getDiagnosisHistory(userId: string, limit?: number): Promi
 }
 
 // CRUD operations for Symptoms
+// buat nomor berikutnya dan simpan dalam satu transaksi, diserialkan lewat kunci bernama (T26)
+async function insertWithNextNo(
+  conn: PoolConnection,
+  table: "symptoms" | "illnesses" | "expert_system",
+  insert: (no: number) => Promise<unknown>
+): Promise<number> {
+  return withNumberLock(conn, `eyedx:${table}:no`, async () => {
+    await conn.beginTransaction();
+    try {
+      const rows = await conn.query(`SELECT MAX(no) as maxNo FROM ${table}`);
+      const nextNo = (rows[0]?.maxNo || 0) + 1;
+      await insert(nextNo);
+      await conn.commit();
+      return nextNo;
+    } catch (error) {
+      await conn.rollback();
+      throw error;
+    }
+  });
+}
+
 export async function createSymptom(data: Omit<Symptom, 'no'>): Promise<number> {
   let conn: PoolConnection | null = null;
   try {
     conn = await pool.getConnection();
     await ensureTables(conn);
-    await conn.beginTransaction();
-
-    // SELECT MAX(no) + INSERT dibungkus transaksi supaya tidak tabrakan nomor (T26)
-    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM symptoms FOR UPDATE`);
-    const nextNo = (rows[0]?.maxNo || 0) + 1;
-
-    await conn.query(
-      `INSERT INTO symptoms (no, kode_gejala, nama_gejala, symptoms_name)
-       VALUES (?, ?, ?, ?)`,
-      [nextNo, data.kodeGejala, data.namaGejala, data.symptomsName]
+    const c = conn;
+    return await insertWithNextNo(c, "symptoms", (no) =>
+      c.query(
+        `INSERT INTO symptoms (no, kode_gejala, nama_gejala, symptoms_name)
+         VALUES (?, ?, ?, ?)`,
+        [no, data.kodeGejala, data.namaGejala, data.symptomsName]
+      )
     );
-    await conn.commit();
-    return nextNo;
-  } catch (error) {
-    if (conn) await conn.rollback();
-    throw error;
   } finally {
     if (conn) conn.release();
   }
@@ -467,22 +481,14 @@ export async function createIllness(data: Omit<Illness, 'no'>): Promise<number> 
   try {
     conn = await pool.getConnection();
     await ensureTables(conn);
-    await conn.beginTransaction();
-
-    // SELECT MAX(no) + INSERT dibungkus transaksi supaya tidak tabrakan nomor (T26)
-    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM illnesses FOR UPDATE`);
-    const nextNo = (rows[0]?.maxNo || 0) + 1;
-
-    await conn.query(
-      `INSERT INTO illnesses (no, kode_penyakit, nama_penyakit)
-       VALUES (?, ?, ?)`,
-      [nextNo, data.kodePenyakit, data.namaPenyakit]
+    const c = conn;
+    return await insertWithNextNo(c, "illnesses", (no) =>
+      c.query(
+        `INSERT INTO illnesses (no, kode_penyakit, nama_penyakit)
+         VALUES (?, ?, ?)`,
+        [no, data.kodePenyakit, data.namaPenyakit]
+      )
     );
-    await conn.commit();
-    return nextNo;
-  } catch (error) {
-    if (conn) await conn.rollback();
-    throw error;
   } finally {
     if (conn) conn.release();
   }
@@ -522,22 +528,14 @@ export async function createExpertSystemEntry(data: Omit<ExpertSystemEntry, 'no'
   try {
     conn = await pool.getConnection();
     await ensureTables(conn);
-    await conn.beginTransaction();
-
-    // SELECT MAX(no) + INSERT dibungkus transaksi supaya tidak tabrakan nomor (T26)
-    const rows = await conn.query(`SELECT MAX(no) as maxNo FROM expert_system FOR UPDATE`);
-    const nextNo = (rows[0]?.maxNo || 0) + 1;
-
-    await conn.query(
-      `INSERT INTO expert_system (no, kode_gejala, cf_p1, cf_p2, cf_p3, cf_p4, cf_p5, cf_p6)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nextNo, data.kodeGejala, data.cf.P1, data.cf.P2, data.cf.P3, data.cf.P4, data.cf.P5, data.cf.P6]
+    const c = conn;
+    return await insertWithNextNo(c, "expert_system", (no) =>
+      c.query(
+        `INSERT INTO expert_system (no, kode_gejala, cf_p1, cf_p2, cf_p3, cf_p4, cf_p5, cf_p6)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [no, data.kodeGejala, data.cf.P1, data.cf.P2, data.cf.P3, data.cf.P4, data.cf.P5, data.cf.P6]
+      )
     );
-    await conn.commit();
-    return nextNo;
-  } catch (error) {
-    if (conn) await conn.rollback();
-    throw error;
   } finally {
     if (conn) conn.release();
   }
