@@ -50,6 +50,17 @@ describe("calculateDiagnosis — kasus uji bagian 10", () => {
     expect(percentageOf(results, "P3")).toBe(0);
   });
 
+  it("kasus 2: kecocokan aturan ikut dihitung tanpa mengubah persentase", async () => {
+    const results = await calculateDiagnosis([
+      { symptomCode: "G2", symptomName: "Mata gatal", userCF: 0.5 },
+      { symptomCode: "G7", symptomName: "Mata terasa lengket saat bangun tidur", userCF: 0.8 },
+      { symptomCode: "G10", symptomName: "Nyeri mata ringan", userCF: 0.5 },
+    ]);
+    expect(results.find(r => r.diseaseCode === "P1")?.ruleMatch).toEqual({ matched: 3, total: 12 });
+    expect(results.find(r => r.diseaseCode === "P3")?.ruleMatch).toEqual({ matched: 0, total: 5 });
+    expect(percentageOf(results, "P5")).toBe(93);
+  });
+
   it("kasus 3: urutan gejala dibalik -> P1 tetap 0.94 (combine komutatif)", async () => {
     const results = await calculateDiagnosis([
       { symptomCode: "G10", symptomName: "Nyeri mata ringan", userCF: 0.5 },

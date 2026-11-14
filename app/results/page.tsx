@@ -170,6 +170,16 @@ export function ResultsView({
               {formatSymptoms(diagnosis.contributingSymptoms)}
             </p>
           </div>
+
+          {/* Kecocokan aturan (gejala inti Tabel 3.7) */}
+          {diagnosis.ruleMatch && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {(diagnosis.ruleMatch.matched === diagnosis.ruleMatch.total ? t.ruleMatchAll : t.ruleMatch)
+                .replace("{code}", diagnosis.diseaseCode)
+                .replace("{matched}", String(diagnosis.ruleMatch.matched))
+                .replace("{total}", String(diagnosis.ruleMatch.total))}
+            </p>
+          )}
         </CardContent>
       </Card>
     );
