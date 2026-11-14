@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,26 +27,23 @@ interface SymptomModalProps {
 }
 
 export default function SymptomModal({ isOpen, onClose, onSave, symptom }: SymptomModalProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <SymptomForm key={symptom?.no ?? "new"} symptom={symptom} onClose={onClose} onSave={onSave} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SymptomForm({ onClose, onSave, symptom }: Omit<SymptomModalProps, "isOpen">) {
   const [formData, setFormData] = useState({
-    kodeGejala: "",
-    namaGejala: "",
-    symptomsName: "",
+    kodeGejala: symptom?.kodeGejala ?? "",
+    namaGejala: symptom?.namaGejala ?? "",
+    symptomsName: symptom?.symptomsName ?? "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (symptom) {
-      setFormData({
-        kodeGejala: symptom.kodeGejala,
-        namaGejala: symptom.namaGejala,
-        symptomsName: symptom.symptomsName,
-      });
-    } else {
-      setFormData({ kodeGejala: "", namaGejala: "", symptomsName: "" });
-    }
-    setError("");
-  }, [symptom, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,70 +86,68 @@ export default function SymptomModal({ isOpen, onClose, onSave, symptom }: Sympt
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{symptom ? "Edit Symptom" : "Add New Symptom"}</DialogTitle>
-        </DialogHeader>
+    <>
+      <DialogHeader>
+        <DialogTitle>{symptom ? "Edit Symptom" : "Add New Symptom"}</DialogTitle>
+      </DialogHeader>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="kodeGejala">Symptom Code</Label>
-              <Input
-                id="kodeGejala"
-                type="text"
-                value={formData.kodeGejala}
-                onChange={(e) => setFormData({ ...formData, kodeGejala: e.target.value })}
-                placeholder="e.g., G01"
-                required
-                className="h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="namaGejala">Indonesian Name</Label>
-              <Input
-                id="namaGejala"
-                type="text"
-                value={formData.namaGejala}
-                onChange={(e) => setFormData({ ...formData, namaGejala: e.target.value })}
-                placeholder="e.g., Mata kering"
-                required
-                className="h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="symptomsName">English Name</Label>
-              <Input
-                id="symptomsName"
-                type="text"
-                value={formData.symptomsName}
-                onChange={(e) => setFormData({ ...formData, symptomsName: e.target.value })}
-                placeholder="e.g., dry eyes"
-                required
-                className="h-11"
-              />
-            </div>
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="kodeGejala">Symptom Code</Label>
+            <Input
+              id="kodeGejala"
+              type="text"
+              value={formData.kodeGejala}
+              onChange={(e) => setFormData({ ...formData, kodeGejala: e.target.value })}
+              placeholder="e.g., G01"
+              required
+              className="h-11"
+            />
           </div>
 
-          <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <div className="space-y-2">
+            <Label htmlFor="namaGejala">Indonesian Name</Label>
+            <Input
+              id="namaGejala"
+              type="text"
+              value={formData.namaGejala}
+              onChange={(e) => setFormData({ ...formData, namaGejala: e.target.value })}
+              placeholder="e.g., Mata kering"
+              required
+              className="h-11"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="symptomsName">English Name</Label>
+            <Input
+              id="symptomsName"
+              type="text"
+              value={formData.symptomsName}
+              onChange={(e) => setFormData({ ...formData, symptomsName: e.target.value })}
+              placeholder="e.g., dry eyes"
+              required
+              className="h-11"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="mt-6">
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
   );
 }
