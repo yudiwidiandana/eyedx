@@ -1,6 +1,7 @@
 import { getSymptoms, getIllnesses, getExpertSystem } from './db';
 import type { DiagnosisResult, SymptomResponse } from './types';
 import { normalizeSymptomCode } from './symptomUtils';
+import { getRuleMatch } from './rules';
 
 function combineCF(cfOld: number, cfNew: number): number {
   return cfOld + cfNew * (1 - cfOld);
@@ -71,6 +72,7 @@ export async function calculateDiagnosis(responses: SymptomResponse[]): Promise<
       cfValue: finalCF,
       percentage: Math.round(finalCF * 100),
       contributingSymptoms,
+      ruleMatch: getRuleMatch(diseaseCode, responses),
     });
   }
 

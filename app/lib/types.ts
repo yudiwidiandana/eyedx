@@ -19,6 +19,12 @@ export interface DiagnosisResult {
   cfValue: number; // Combined CF value
   percentage: number; // CF as percentage (0-100)
   contributingSymptoms: string[]; // List of symptom names that contributed
+  ruleMatch?: RuleMatch; // kecocokan gejala inti Tabel 3.7; kosong pada hasil lama
+}
+
+export interface RuleMatch {
+  matched: number;
+  total: number;
 }
 
 // Symptom data structure from symptoms.json
