@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,24 +25,22 @@ interface IllnessModalProps {
 }
 
 export default function IllnessModal({ isOpen, onClose, onSave, illness }: IllnessModalProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <IllnessForm key={illness?.no ?? "new"} illness={illness} onClose={onClose} onSave={onSave} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function IllnessForm({ onClose, onSave, illness }: Omit<IllnessModalProps, "isOpen">) {
   const [formData, setFormData] = useState({
-    kodePenyakit: "",
-    namaPenyakit: "",
+    kodePenyakit: illness?.kodePenyakit ?? "",
+    namaPenyakit: illness?.namaPenyakit ?? "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (illness) {
-      setFormData({
-        kodePenyakit: illness.kodePenyakit,
-        namaPenyakit: illness.namaPenyakit,
-      });
-    } else {
-      setFormData({ kodePenyakit: "", namaPenyakit: "" });
-    }
-    setError("");
-  }, [illness, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,66 +77,64 @@ export default function IllnessModal({ isOpen, onClose, onSave, illness }: Illne
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{illness ? "Edit Illness" : "Add New Illness"}</DialogTitle>
-        </DialogHeader>
+    <>
+      <DialogHeader>
+        <DialogTitle>{illness ? "Edit Illness" : "Add New Illness"}</DialogTitle>
+      </DialogHeader>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {!illness && (
-          <Alert>
-            <AlertDescription>
-              Mesin CF hanya menghitung penyakit P1-P6, jadi kode lain akan ditolak.
-            </AlertDescription>
-          </Alert>
-        )}
+      {!illness && (
+        <Alert>
+          <AlertDescription>
+            Mesin CF hanya menghitung penyakit P1-P6, jadi kode lain akan ditolak.
+          </AlertDescription>
+        </Alert>
+      )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="kodePenyakit">Illness Code</Label>
-              <Input
-                id="kodePenyakit"
-                type="text"
-                value={formData.kodePenyakit}
-                onChange={(e) => setFormData({ ...formData, kodePenyakit: e.target.value })}
-                placeholder="e.g., P1"
-                required
-                disabled={!!illness}
-                className="h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="namaPenyakit">Illness Name</Label>
-              <Input
-                id="namaPenyakit"
-                type="text"
-                value={formData.namaPenyakit}
-                onChange={(e) => setFormData({ ...formData, namaPenyakit: e.target.value })}
-                placeholder="e.g., Blefaritis"
-                required
-                className="h-11"
-              />
-            </div>
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="kodePenyakit">Illness Code</Label>
+            <Input
+              id="kodePenyakit"
+              type="text"
+              value={formData.kodePenyakit}
+              onChange={(e) => setFormData({ ...formData, kodePenyakit: e.target.value })}
+              placeholder="e.g., P1"
+              required
+              disabled={!!illness}
+              className="h-11"
+            />
           </div>
 
-          <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <div className="space-y-2">
+            <Label htmlFor="namaPenyakit">Illness Name</Label>
+            <Input
+              id="namaPenyakit"
+              type="text"
+              value={formData.namaPenyakit}
+              onChange={(e) => setFormData({ ...formData, namaPenyakit: e.target.value })}
+              placeholder="e.g., Blefaritis"
+              required
+              className="h-11"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="mt-6">
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
   );
 }

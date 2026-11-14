@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,34 +48,30 @@ export default function ExpertSystemModal({
   symptoms,
   illnesses,
 }: ExpertSystemModalProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <ExpertSystemForm key={entry?.no ?? "new"} entry={entry} symptoms={symptoms} illnesses={illnesses} onClose={onClose} onSave={onSave} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ExpertSystemForm({
+  onClose,
+  onSave,
+  entry,
+  symptoms,
+  illnesses,
+}: Omit<ExpertSystemModalProps, "isOpen">) {
   const [formData, setFormData] = useState({
-    kodeGejala: "",
-    cf: {
-      P1: null as number | null,
-      P2: null as number | null,
-      P3: null as number | null,
-      P4: null as number | null,
-      P5: null as number | null,
-      P6: null as number | null,
-    },
+    kodeGejala: entry?.kodeGejala ?? "",
+    cf: entry
+      ? { ...entry.cf }
+      : { P1: null as number | null, P2: null as number | null, P3: null as number | null, P4: null as number | null, P5: null as number | null, P6: null as number | null },
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (entry) {
-      setFormData({
-        kodeGejala: entry.kodeGejala,
-        cf: { ...entry.cf },
-      });
-    } else {
-      setFormData({
-        kodeGejala: "",
-        cf: { P1: null, P2: null, P3: null, P4: null, P5: null, P6: null },
-      });
-    }
-    setError("");
-  }, [entry, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,88 +119,86 @@ export default function ExpertSystemModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {entry ? "Edit Expert System Entry" : "Add New Expert System Entry"}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          {entry ? "Edit Expert System Entry" : "Add New Expert System Entry"}
+        </DialogTitle>
+      </DialogHeader>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="kodeGejala">Symptom</Label>
-              {entry ? (
-                <Input id="kodeGejala" type="text" value={formData.kodeGejala} disabled className="h-11" />
-              ) : (
-                <Select
-                  value={formData.kodeGejala}
-                  onValueChange={(value) => setFormData({ ...formData, kodeGejala: value ?? "" })}
-                  required
-                >
-                  <SelectTrigger id="kodeGejala" className="w-full !h-11">
-                    <SelectValue placeholder="Select symptom...">
-                      {(value: string | null) => {
-                        const match = symptoms.find((s) => s.kodeGejala === value);
-                        return match ? `${match.kodeGejala} - ${match.namaGejala}` : "Select symptom...";
-                      }}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {symptoms.map((symptom) => (
-                      <SelectItem key={symptom.kodeGejala} value={symptom.kodeGejala}>
-                        {symptom.kodeGejala} - {symptom.namaGejala}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            <div>
-              <h3 className="mb-3 text-lg font-semibold text-foreground">
-                Certainty Factors (0.0 - 1.0 or leave empty for null)
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {illnesses.map((illness) => (
-                  <div key={illness.kodePenyakit} className="space-y-2">
-                    <Label htmlFor={`cf-${illness.kodePenyakit}`}>
-                      {illness.kodePenyakit} - {illness.namaPenyakit}
-                    </Label>
-                    <Input
-                      id={`cf-${illness.kodePenyakit}`}
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="1"
-                      value={formData.cf[illness.kodePenyakit as keyof typeof formData.cf] ?? ""}
-                      onChange={(e) => handleCFChange(illness.kodePenyakit, e.target.value)}
-                      placeholder="0.0 - 1.0 or empty"
-                      className="h-11"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="kodeGejala">Symptom</Label>
+            {entry ? (
+              <Input id="kodeGejala" type="text" value={formData.kodeGejala} disabled className="h-11" />
+            ) : (
+              <Select
+                value={formData.kodeGejala}
+                onValueChange={(value) => setFormData({ ...formData, kodeGejala: value ?? "" })}
+                required
+              >
+                <SelectTrigger id="kodeGejala" className="w-full !h-11">
+                  <SelectValue placeholder="Select symptom...">
+                    {(value: string | null) => {
+                      const match = symptoms.find((s) => s.kodeGejala === value);
+                      return match ? `${match.kodeGejala} - ${match.namaGejala}` : "Select symptom...";
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {symptoms.map((symptom) => (
+                    <SelectItem key={symptom.kodeGejala} value={symptom.kodeGejala}>
+                      {symptom.kodeGejala} - {symptom.namaGejala}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
-          <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <div>
+            <h3 className="mb-3 text-lg font-semibold text-foreground">
+              Certainty Factors (0.0 - 1.0 or leave empty for null)
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              {illnesses.map((illness) => (
+                <div key={illness.kodePenyakit} className="space-y-2">
+                  <Label htmlFor={`cf-${illness.kodePenyakit}`}>
+                    {illness.kodePenyakit} - {illness.namaPenyakit}
+                  </Label>
+                  <Input
+                    id={`cf-${illness.kodePenyakit}`}
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    value={formData.cf[illness.kodePenyakit as keyof typeof formData.cf] ?? ""}
+                    onChange={(e) => handleCFChange(illness.kodePenyakit, e.target.value)}
+                    placeholder="0.0 - 1.0 or empty"
+                    className="h-11"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="mt-6">
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
   );
 }
