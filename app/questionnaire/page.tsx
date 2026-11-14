@@ -105,7 +105,8 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
 
   const currentSymptom = allSymptoms[currentQuestionIndex];
   const answeredCount = responses.filter(r => r.userCF > 0).length;
-  const progress = ((answeredCount + 1) / totalQuestions) * 100;
+  // selaras dengan teks "Pertanyaan X dari Y"; 0 bila gejala belum termuat
+  const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
 
   const severityOptions: { value: SeverityLevel; label: string; activeClass: string }[] = [
     { value: "none", label: t.severityNone, activeClass: "border-zinc-500 bg-zinc-50" },
