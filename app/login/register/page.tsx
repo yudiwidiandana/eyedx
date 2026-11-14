@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../../components/Header";
 import { translations, type Locale } from "../../lib/translations";
+import { localizeAuthError } from "../../lib/authErrors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,7 +89,7 @@ function RegisterForm({ locale }: { locale: Locale }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || t.errorRegisterFailed);
+        setError(data.error ? localizeAuthError(data.error, t) : t.errorRegisterFailed);
         setLoading(false);
         return;
       }
@@ -236,7 +237,7 @@ export function RegisterPageContent({ locale }: { locale: Locale }) {
         <div className="flex min-h-screen flex-col bg-background">
           <Header locale={locale} />
           <main className="flex flex-1 items-center justify-center">
-            <p className="text-lg text-muted-foreground">Loading...</p>
+            <p className="text-lg text-muted-foreground">{translations[locale].authPage.loading}</p>
           </main>
         </div>
       }
