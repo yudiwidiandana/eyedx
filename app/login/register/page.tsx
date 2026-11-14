@@ -237,7 +237,7 @@ export function RegisterPageContent({ locale }: { locale: Locale }) {
         <div className="flex min-h-screen flex-col bg-background">
           <Header locale={locale} />
           <main className="flex flex-1 items-center justify-center">
-            <p className="text-lg text-muted-foreground">{translations[locale].authPage.loading}</p>
+            <p className="text-lg text-muted-foreground">{translations[locale].common.loading}</p>
           </main>
         </div>
       }

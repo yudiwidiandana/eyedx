@@ -5,7 +5,7 @@ import { useAuth } from "../lib/useAuth";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
 import Header from "../components/Header";
-import { type Locale } from "../lib/translations";
+import { translations, type Locale } from "../lib/translations";
 import SymptomModal from "./components/SymptomModal";
 import IllnessModal from "./components/IllnessModal";
 import ExpertSystemModal from "./components/ExpertSystemModal";
@@ -221,7 +221,7 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
       <div className="flex min-h-screen flex-col bg-background">
         <Header locale={locale} />
         <main className="flex flex-1 items-center justify-center">
-          <p className="text-lg text-muted-foreground">Loading...</p>
+          <p className="text-lg text-muted-foreground">{translations[locale].common.loading}</p>
         </main>
       </div>
     );

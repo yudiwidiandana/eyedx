@@ -8,6 +8,13 @@ export const translations = {
       home: "Home",
       diagnosis: "Diagnosis",
       about: "About",
+      profile: "Profile",
+      admin: "Admin",
+      logout: "Logout",
+      login: "Login",
+    },
+    common: {
+      loading: "Loading...",
     },
     hero: {
       title: "Eye Disease Screening",
@@ -56,6 +63,7 @@ export const translations = {
     questionnairePage: {
       title: "Symptom Questionnaire",
       progress: "Question {current} of {total}",
+      answered: "{count} symptoms reported",
       question: "Do you experience this symptom?",
       severityLabel: "Select severity level:",
       severityNone: "None",
@@ -132,7 +140,6 @@ export const translations = {
       errorMissingFields: "Please fill in all required fields",
       errorInvalidGender: "Invalid gender selection",
       errorCreateFailed: "Failed to create account",
-      loading: "Loading...",
     },
     language: {
       label: "Language",
@@ -145,6 +152,13 @@ export const translations = {
       home: "Beranda",
       diagnosis: "Diagnosis",
       about: "Tentang",
+      profile: "Profil",
+      admin: "Admin",
+      logout: "Keluar",
+      login: "Masuk",
+    },
+    common: {
+      loading: "Memuat...",
     },
     hero: {
       title: "Diagnosis Penyakit Mata",
@@ -198,6 +212,7 @@ export const translations = {
     questionnairePage: {
       title: "Kuesioner Gejala",
       progress: "Pertanyaan {current} dari {total}",
+      answered: "{count} gejala dilaporkan muncul",
       question: "Apakah Anda mengalami gejala ini?",
       severityLabel: "Pilih tingkat keparahan:",
       severityNone: "Tidak Ada",
@@ -274,7 +289,6 @@ export const translations = {
       errorMissingFields: "Mohon lengkapi semua kolom yang wajib diisi",
       errorInvalidGender: "Pilihan jenis kelamin tidak valid",
       errorCreateFailed: "Gagal membuat akun",
-      loading: "Memuat...",
     },
     language: {
       label: "Bahasa",
