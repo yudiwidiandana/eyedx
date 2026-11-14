@@ -1,8 +1,7 @@
 import type { SymptomResponse } from './types';
 
-// format baku tabel symptoms (G01..G39) — kode lain lolos dari normalizeSymptomCode()
-// tapi diam-diam tidak pernah cocok dengan expertSystem.json saat dihitung (T5)
-const SYMPTOM_CODE_PATTERN = /^G\d{2}$/;
+// format baku tabel symptoms: hanya G01 sampai G39 (T5)
+const SYMPTOM_CODE_PATTERN = /^G(0[1-9]|[12]\d|3[0-9])$/;
 
 export function isValidSymptomCode(code: string): boolean {
   return SYMPTOM_CODE_PATTERN.test(code);

@@ -7,6 +7,18 @@ describe("isValidSymptomCode", () => {
     expect(isValidSymptomCode("G39")).toBe(true);
   });
 
+  it("menerima batas tiap rentang digit: G09, G10, G29, G30", () => {
+    for (const code of ["G09", "G10", "G29", "G30"]) {
+      expect(isValidSymptomCode(code)).toBe(true);
+    }
+  });
+
+  it("menolak kode di luar G01-G39 seperti G00, G40, dan G99", () => {
+    for (const code of ["G00", "G40", "G50", "G99"]) {
+      expect(isValidSymptomCode(code)).toBe(false);
+    }
+  });
+
   it("menolak kode tanpa padding nol, huruf kecil, atau format lain yang akan lolos tak terdeteksi", () => {
     expect(isValidSymptomCode("G1")).toBe(false);
     expect(isValidSymptomCode("g01")).toBe(false);
