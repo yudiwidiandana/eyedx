@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../lib/useAuth";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
@@ -73,12 +73,23 @@ interface ExpertSystemEntry {
 
 type TabType = "symptoms" | "illnesses" | "expert-system" | "users";
 
+const TAB_ENDPOINTS: Record<TabType, string> = {
+  symptoms: "/api/admin/symptoms",
+  illnesses: "/api/admin/illnesses",
+  "expert-system": "/api/admin/expert-system",
+  users: "/api/admin/users",
+};
+
 export function AdminPageContent({ locale }: { locale: Locale }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const path = (segment: string) =>
-    `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`;
-  const [activeTab, setActiveTab] = useState<TabType>("symptoms");
+  const path = useCallback(
+    (segment: string) => `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`,
+    [locale]
+  );
+  const [selectedTab, setSelectedTab] = useState<TabType>("symptoms");
+  // pakar hanya punya tab Expert System, jadi diturunkan dari role tanpa efek
+  const activeTab: TabType = user?.role === "expert" ? "expert-system" : selectedTab;
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
   const [illnesses, setIllnesses] = useState<Illness[]>([]);
   const [expertSystem, setExpertSystem] = useState<ExpertSystemEntry[]>([]);
@@ -102,46 +113,28 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
     if (!loading && (!user || (user.role !== "admin" && user.role !== "expert"))) {
       router.push(path(""));
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, path]);
 
-  useEffect(() => {
-    if (user?.role === "expert") {
-      setActiveTab("expert-system");
-    }
-  }, [user]);
+  const loadData = useCallback(
+    () =>
+      fetch(TAB_ENDPOINTS[activeTab])
+        .then((res) => res.json())
+        .then((data) => {
+          if (activeTab === "symptoms") setSymptoms(data.symptoms || []);
+          else if (activeTab === "illnesses") setIllnesses(data.illnesses || []);
+          else if (activeTab === "expert-system") setExpertSystem(data.expertSystem || []);
+          else setUsers(data.users || []);
+        })
+        .catch((error) => console.error("Failed to load data:", error))
+        .finally(() => setDataLoading(false)),
+    [activeTab]
+  );
 
   useEffect(() => {
     if (user && (user.role === "admin" || user.role === "expert")) {
       loadData();
     }
-  }, [user, activeTab]);
-
-  const loadData = async () => {
-    setDataLoading(true);
-
-    try {
-      if (activeTab === "symptoms") {
-        const res = await fetch("/api/admin/symptoms");
-        const data = await res.json();
-        setSymptoms(data.symptoms || []);
-      } else if (activeTab === "illnesses") {
-        const res = await fetch("/api/admin/illnesses");
-        const data = await res.json();
-        setIllnesses(data.illnesses || []);
-      } else if (activeTab === "expert-system") {
-        const res = await fetch("/api/admin/expert-system");
-        const data = await res.json();
-        setExpertSystem(data.expertSystem || []);
-      } else if (activeTab === "users") {
-        const res = await fetch("/api/admin/users");
-        const data = await res.json();
-        setUsers(data.users || []);
-      }
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    }
-    setDataLoading(false);
-  };
+  }, [user, loadData]);
 
   const handleAddNew = () => {
     if (activeTab === "symptoms") {
@@ -159,18 +152,18 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
     }
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: Symptom | Illness | ExpertSystemEntry | AdminUser) => {
     if (activeTab === "symptoms") {
-      setEditingSymptom(item);
+      setEditingSymptom(item as Symptom);
       setSymptomModalOpen(true);
     } else if (activeTab === "illnesses") {
-      setEditingIllness(item);
+      setEditingIllness(item as Illness);
       setIllnessModalOpen(true);
     } else if (activeTab === "expert-system") {
-      setEditingExpertSystem(item);
+      setEditingExpertSystem(item as ExpertSystemEntry);
       setExpertSystemModalOpen(true);
     } else if (activeTab === "users") {
-      setEditingUser(item);
+      setEditingUser(item as AdminUser);
       setUserModalOpen(true);
     }
   };
@@ -260,7 +253,10 @@ export function AdminPageContent({ locale }: { locale: Locale }) {
 
           <Tabs
             value={activeTab}
-            onValueChange={(value) => setActiveTab(value as TabType)}
+            onValueChange={(value) => {
+              setDataLoading(true);
+              setSelectedTab(value as TabType);
+            }}
             className="gap-0"
           >
             <TabsList variant="line" className="mb-6 h-auto w-full justify-start gap-6 border-b border-border bg-transparent p-0">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "../lib/useAuth";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
@@ -33,14 +33,16 @@ export function ProfilePageContent({ locale }: { locale: Locale }) {
     admin: t.roleAdmin,
   };
 
-  const path = (segment: string) =>
-    `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`;
+  const path = useCallback(
+    (segment: string) => `/${locale === "en" ? segment : [locale, segment].filter(Boolean).join("/")}`,
+    [locale]
+  );
 
   useEffect(() => {
     if (!loading && !user) {
       router.push(path("login"));
     }
-  }, [loading, user, router]);
+  }, [loading, user, router, path]);
 
   useEffect(() => {
     if (user) {

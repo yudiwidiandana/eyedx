@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/Header";
@@ -292,6 +292,8 @@ export function ResultsView({
   );
 }
 
+const subscribeNoop = () => () => {};
+
 function SavedResultCard({
   locale,
   savedUuid,
@@ -309,13 +311,10 @@ function SavedResultCard({
   copyLabel: string;
   copiedLabel: string;
 }) {
-  const [origin, setOrigin] = useState('');
+  // origin hanya ada di browser; server dan render hidrasi memakai string kosong
+  const origin = useSyncExternalStore(subscribeNoop, () => window.location.origin, () => "");
   const path = `/${locale === "en" ? "" : locale + "/"}results/${savedUuid}`;
   const fullUrl = origin ? `${origin}${path}` : path;
-
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
 
   return (
     <Card className="border-green-300 bg-green-50">
