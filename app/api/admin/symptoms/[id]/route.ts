@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/app/lib/requireRole";
-import { updateSymptom, deleteSymptom } from "@/app/lib/db";
-import { isValidSymptomCode } from "@/app/lib/symptomUtils";
+import { updateSymptom, deleteSymptom, getSymptoms, getExpertSystem } from "@/app/lib/db";
+import { isValidSymptomCode, isSymptomReferenced } from "@/app/lib/symptomUtils";
 
 export async function PUT(
   req: NextRequest,
@@ -51,6 +51,15 @@ export async function DELETE(
     
     if (isNaN(no)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
+    // gejala yang masih punya baris CF tidak boleh dihapus supaya tidak meninggalkan data yatim
+    const target = (await getSymptoms()).find(s => s.no === no);
+    if (target && isSymptomReferenced(target.kodeGejala, await getExpertSystem())) {
+      return NextResponse.json(
+        { error: `Gejala ${target.kodeGejala} masih dipakai di basis pengetahuan, hapus baris CF-nya di tab Expert System terlebih dahulu` },
+        { status: 400 }
+      );
     }
 
     await deleteSymptom(no);
