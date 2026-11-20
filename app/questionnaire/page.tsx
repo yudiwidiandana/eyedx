@@ -140,7 +140,7 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
             <CardContent>
               <h1 className="mb-2 text-2xl font-bold text-foreground">{t.question}</h1>
               <p className="mb-8 text-3xl font-semibold text-primary">
-                {currentSymptom.namaGejala}
+                {locale === "en" ? currentSymptom.symptomsName || currentSymptom.namaGejala : currentSymptom.namaGejala}
               </p>
 
               {/* Severity options */}
