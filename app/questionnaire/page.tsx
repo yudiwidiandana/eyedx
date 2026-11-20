@@ -14,6 +14,31 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const dynamic = 'force-dynamic';
 
+// progres disimpan di sessionStorage agar tidak hilang saat ganti bahasa (rute berbeda)
+const PROGRESS_KEY = "eyedx:questionnaire-progress";
+
+function loadProgress(): { index: number; answers: Record<string, number> } | null {
+  try {
+    const raw = sessionStorage.getItem(PROGRESS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveProgress(index: number, responses: SymptomResponse[]) {
+  try {
+    const answers = Object.fromEntries(responses.map(r => [r.symptomCode, r.userCF]));
+    sessionStorage.setItem(PROGRESS_KEY, JSON.stringify({ index, answers }));
+  } catch {}
+}
+
+function clearProgress() {
+  try {
+    sessionStorage.removeItem(PROGRESS_KEY);
+  } catch {}
+}
+
 function QuestionnaireContent({ locale }: { locale: Locale }) {
   const t = translations[locale].questionnairePage;
   const router = useRouter();
@@ -39,18 +64,28 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
     fetch('/api/symptoms')
       .then(res => res.json())
       .then(data => {
-        setAllSymptoms(data.symptoms || []);
-        setResponses((data.symptoms || []).map((symptom: Symptom) => ({
+        const list: Symptom[] = data.symptoms || [];
+        const saved = loadProgress();
+        setAllSymptoms(list);
+        setResponses(list.map((symptom) => ({
           symptomCode: symptom.kodeGejala,
           symptomName: symptom.namaGejala,
-          userCF: 0,
+          userCF: saved?.answers?.[symptom.kodeGejala] ?? 0,
         })));
+        if (saved && Number.isInteger(saved.index) && saved.index >= 0 && saved.index < list.length) {
+          setCurrentQuestionIndex(saved.index);
+        }
         setLoading(false);
       })
       .catch(() => {
         setLoading(false);
       });
   }, []);
+
+  // simpan progres setiap ada perubahan setelah gejala termuat
+  useEffect(() => {
+    if (!loading && responses.length > 0) saveProgress(currentQuestionIndex, responses);
+  }, [loading, currentQuestionIndex, responses]);
 
   useEffect(() => {
     if (profileIncomplete) {
@@ -84,6 +119,7 @@ function QuestionnaireContent({ locale }: { locale: Locale }) {
   };
 
   const handleFinish = () => {
+    clearProgress();
     const encodedResponses = encodeResponses(responses);
     const params = new URLSearchParams({
       responses: encodedResponses,
